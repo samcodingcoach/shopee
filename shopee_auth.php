@@ -21,30 +21,62 @@ if ($api_response !== false) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // 1. Kredensial TEST Anda
     $partnerId = $_POST['partner_id'] ?? '';
     $partnerKey = $_POST['partner_key'] ?? '';
+    $app_code = $_POST['app_code'] ?? '';
+    $app_shop_id = $_POST['app_shop_id'] ?? '';
+    $redirectUrl = $_POST['redirect_url'] ?? $redirect_url;
 
-    // 2. Endpoint Otorisasi
-    $apiPath = "/api/v2/shop/auth_partner";
-    $timestamp = time();
+    // Check if code and shop_id are both null/empty
+    if (empty($app_code) && empty($app_shop_id)) {
+        // Step 1: Redirect to Shopee Authorization
+        $apiPath = "/api/v2/shop/auth_partner";
+        $timestamp = time();
+        $baseString = $partnerId . $apiPath . $timestamp;
+        $sign = hash_hmac('sha256', $baseString, $partnerKey);
+        $baseUrl = "https://openplatform.sandbox.test-stable.shopee.sg";
+        $finalUrl = $baseUrl . $apiPath . "?partner_id=" . $partnerId . "&timestamp=" . $timestamp . "&sign=" . $sign . "&redirect=" . urlencode($redirectUrl);
+        header("Location: " . $finalUrl);
+        exit();
+    } else {
+        // Step 2: Get access_token and refresh_token
+        $apiPath = "/api/v2/auth/token/get";
+        $timestamp = time();
+        $baseString = $partnerId . $apiPath . $timestamp;
+        $sign = hash_hmac('sha256', $baseString, $partnerKey);
+        $baseUrl = "https://openplatform.sandbox.test-stable.shopee.sg";
+        $finalUrl = sprintf("%s%s?partner_id=%s&timestamp=%s&sign=%s",
+            $baseUrl, $apiPath, $partnerId, $timestamp, $sign
+        );
 
-    // 3. Generate Signature
-    $baseString = $partnerId . $apiPath . $timestamp;
-    $sign = hash_hmac('sha256', $baseString, $partnerKey);
+        $bodyData = [
+            "code" => $app_code,
+            "shop_id" => (int)$app_shop_id,
+            "partner_id" => (int)$partnerId
+        ];
+        $jsonBody = json_encode($bodyData);
 
-    // 4. URL FINAL (Menggunakan environment Sandbox Test Shopee Terbaru)
-    $baseUrl = "https://openplatform.sandbox.test-stable.shopee.sg";
+        $ch = curl_init($finalUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonBody);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
 
-    // 5. Setup Redirect
-    $redirectUrl = urlencode($_POST['redirect_url'] ?? $redirect_url);
+        $response = curl_exec($ch);
 
-    // 6. Rakit URL
-    $finalUrl = $baseUrl . $apiPath . "?partner_id=" . $partnerId . "&timestamp=" . $timestamp . "&sign=" . $sign . "&redirect=" . $redirectUrl;
+        if(curl_errno($ch)){
+            $result = ["success" => false, "message" => curl_error($ch)];
+        } else {
+            $result = json_decode($response, true);
+            $result["success"] = true;
+        }
 
-    // 7. Eksekusi Redirect
-    header("Location: " . $finalUrl);
-    exit();
+        curl_close($ch);
+
+        header("Content-Type: application/json");
+        echo json_encode($result);
+        exit();
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -62,15 +94,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p>Open Platform API</p>
         </div>
 
-        <form method="POST" action="">
+        <form method="POST" action="" id="authForm">
             <div class="form-group">
                 <label for="app_select">Pilih Aplikasi</label>
                 <select id="app_select" class="form-select" onchange="updateCredentials()">
                     <option value="">-- Pilih Aplikasi --</option>
                     <?php if (!empty($app_list)): ?>
                         <?php foreach ($app_list as $app): ?>
-                            <option value="<?php echo htmlspecialchars($app['partner_id']); ?>" 
+                            <option value="<?php echo htmlspecialchars($app['partner_id']); ?>"
                                     data-key="<?php echo htmlspecialchars($app['partner_key']); ?>"
+                                    data-code="<?php echo htmlspecialchars($app['code'] ?? ''); ?>"
+                                    data-shopid="<?php echo htmlspecialchars($app['shop_id'] ?? ''); ?>"
                                     data-name="<?php echo htmlspecialchars($app['nama_app']); ?>">
                                 <?php echo htmlspecialchars($app['nama_app']); ?> (<?php echo htmlspecialchars($app['status_label']); ?>)
                             </option>
@@ -96,11 +130,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="url" id="redirect_url" name="redirect_url" value="<?php echo htmlspecialchars($redirect_url); ?>" required>
             </div>
 
-            <button type="submit" class="btn-submit">Authorize</button>
+            <input type="hidden" id="app_code" name="app_code" value="">
+            <input type="hidden" id="app_shop_id" name="app_shop_id" value="">
+
+            <button type="button" class="btn-submit" onclick="showConfirm()">Authorize</button>
         </form>
 
         <div class="footer">
             Sandbox Environment
+        </div>
+    </div>
+
+    <!-- Modal Popup -->
+    <div id="confirmModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-icon" id="modalIcon">⚠️</div>
+            <h3 class="modal-title" id="modalTitle">Konfirmasi</h3>
+            <p class="modal-message" id="modalMessage"></p>
+            <div class="modal-buttons">
+                <button class="modal-btn btn-cancel" onclick="closeModal()">Batal</button>
+                <button class="modal-btn btn-confirm" onclick="submitForm()">Ya, Lanjutkan</button>
+            </div>
         </div>
     </div>
 
@@ -112,11 +162,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (select.value) {
                 document.getElementById('partner_id').value = select.value;
                 document.getElementById('partner_key').value = selectedOption.getAttribute('data-key');
+                document.getElementById('app_code').value = selectedOption.getAttribute('data-code') || '';
+                document.getElementById('app_shop_id').value = selectedOption.getAttribute('data-shopid') || '';
             } else {
                 document.getElementById('partner_id').value = '';
                 document.getElementById('partner_key').value = '';
+                document.getElementById('app_code').value = '';
+                document.getElementById('app_shop_id').value = '';
             }
         }
+
+        function showConfirm() {
+            const form = document.getElementById('authForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const code = document.getElementById('app_code').value;
+            const shopId = document.getElementById('app_shop_id').value;
+            const modal = document.getElementById('confirmModal');
+            const icon = document.getElementById('modalIcon');
+            const title = document.getElementById('modalTitle');
+            const message = document.getElementById('modalMessage');
+
+            if (code === '' && shopId === '') {
+                // Kondisi 1: Belum ada code & shop_id, redirect ke Shopee
+                icon.textContent = '🔐';
+                title.textContent = 'Otorisasi Shopee';
+                message.textContent = 'Anda akan diarahkan ke halaman login Shopee untuk memberikan izin akses. Lanjutkan?';
+            } else {
+                // Kondisi 2: Sudah ada code & shop_id, request token
+                icon.textContent = '🎟️';
+                title.textContent = 'Dapatkan Token Akses';
+                message.textContent = 'Aplikasi sudah memiliki kode otorisasi. Sistem akan meminta access_token dan refresh_token dari Shopee. Lanjutkan?';
+            }
+
+            modal.classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('confirmModal').classList.remove('show');
+        }
+
+        function submitForm() {
+            closeModal();
+            document.getElementById('authForm').submit();
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('confirmModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
     </script>
 </body>
 </html>
