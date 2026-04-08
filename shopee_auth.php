@@ -39,42 +39,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header("Location: " . $finalUrl);
         exit();
     } else {
-        // Step 2: Get access_token and refresh_token
-        $apiPath = "/api/v2/auth/token/get";
-        $timestamp = time();
-        $baseString = $partnerId . $apiPath . $timestamp;
-        $sign = hash_hmac('sha256', $baseString, $partnerKey);
-        $baseUrl = "https://openplatform.sandbox.test-stable.shopee.sg";
-        $finalUrl = sprintf("%s%s?partner_id=%s&timestamp=%s&sign=%s",
-            $baseUrl, $apiPath, $partnerId, $timestamp, $sign
-        );
-
-        $bodyData = [
-            "code" => $app_code,
-            "shop_id" => (int)$app_shop_id,
-            "partner_id" => (int)$partnerId
-        ];
-        $jsonBody = json_encode($bodyData);
-
-        $ch = curl_init($finalUrl);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonBody);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-
-        $response = curl_exec($ch);
-
-        if(curl_errno($ch)){
-            $result = ["success" => false, "message" => curl_error($ch)];
-        } else {
-            $result = json_decode($response, true);
-            $result["success"] = true;
-        }
-
-        curl_close($ch);
-
-        header("Content-Type: application/json");
-        echo json_encode($result);
+        // Step 2: Redirect to get_token.php with code and shop_id
+        $url = "get_token.php?code=" . urlencode($app_code) . 
+               "&shop_id=" . urlencode($app_shop_id) . 
+               "&partner_id=" . urlencode($partnerId);
+        header("Location: " . $url);
         exit();
     }
 }
@@ -192,10 +161,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 title.textContent = 'Otorisasi Shopee';
                 message.textContent = 'Anda akan diarahkan ke halaman login Shopee untuk memberikan izin akses. Lanjutkan?';
             } else {
-                // Kondisi 2: Sudah ada code & shop_id, request token
+                // Kondisi 2: Sudah ada code & shop_id, redirect ke get_token.php
                 icon.textContent = '🎟️';
                 title.textContent = 'Dapatkan Token Akses';
-                message.textContent = 'Aplikasi sudah memiliki kode otorisasi. Sistem akan meminta access_token dan refresh_token dari Shopee. Lanjutkan?';
+                message.textContent = 'Aplikasi sudah memiliki kode otorisasi. Sistem akan memproses untuk mendapatkan access_token dan refresh_token. Lanjutkan?';
             }
 
             modal.classList.add('show');
