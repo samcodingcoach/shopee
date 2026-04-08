@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
-    $query = "SELECT id_app, nama_app, partner_key, partner_id, status_app, created_date FROM app ORDER BY created_date DESC";
+    $query = "SELECT id_app, nama_app, code_text, shop_id, partner_key, partner_id, status_app, created_date FROM app ORDER BY created_date DESC";
     $result = $conn->query($query);
 
     if (!$result) {
@@ -28,6 +28,8 @@ try {
         $data[] = [
             "id_app" => (int) $row['id_app'],
             "nama_app" => $row['nama_app'],
+            "code_text" => $row['code_text'],
+            "shop_id" => $row['shop_id'],
             "partner_key" => $row['partner_key'],
             "partner_id" => $row['partner_id'],
             "status_app" => (int) $row['status_app'],

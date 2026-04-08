@@ -5,3 +5,5 @@ partner_key text
 partner_id varchar
 status_app tinyint 0 = Developing , 1 = Live Production
 created_date datetime
+code text
+shop_id text
