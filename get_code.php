@@ -24,17 +24,45 @@ if ($api_response !== false) {
 
 // If code and shop_id exist from callback
 if (!empty($code) && !empty($shopId)) {
-    $app_code = '';
-    $app_shop_id = '';
+    $app_id = null;
+    $app_name = '';
     
     // Find matching app by partner_id
     if (!empty($partnerId)) {
         foreach ($app_list as $app) {
             if ($app['partner_id'] == $partnerId) {
-                $app_code = $code;
-                $app_shop_id = $shopId;
+                $app_id = $app['id_app'];
+                $app_name = $app['nama_app'];
                 break;
             }
+        }
+    }
+    
+    // Update app if found
+    $updateSuccess = false;
+    $updateMessage = '';
+    
+    if ($app_id) {
+        $api_update_url = "http://" . $_SERVER['HTTP_HOST'] . "/shopee/api/app/update.php";
+        $update_data = json_encode([
+            "id_app" => $app_id,
+            "code" => $code,
+            "shop_id" => $shopId
+        ]);
+        
+        $ch = curl_init($api_update_url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $update_data);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        
+        $update_response = curl_exec($ch);
+        curl_close($ch);
+        
+        if ($update_response) {
+            $update_result = json_decode($update_response, true);
+            $updateSuccess = $update_result['success'] ?? false;
+            $updateMessage = $update_result['message'] ?? '';
         }
     }
 }
@@ -55,6 +83,16 @@ if (!empty($code) && !empty($shopId)) {
         </div>
 
         <?php if (!empty($code) && !empty($shopId)): ?>
+            <?php if ($updateSuccess): ?>
+                <div class="notification success">
+                    <div class="notif-icon">✅</div>
+                    <div class="notif-content">
+                        <h4>Berhasil!</h4>
+                        <p>Code dan Shop ID untuk <strong><?php echo htmlspecialchars($app_name); ?></strong> telah diperbarui.</p>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <div class="token-result show">
                 <div class="token-group">
                     <label>Authorization Code</label>
@@ -82,6 +120,7 @@ if (!empty($code) && !empty($shopId)) {
                     </div>
                 <?php endif; ?>
 
+                <a href="get_token.php?code=<?php echo urlencode($code); ?>&shop_id=<?php echo urlencode($shopId); ?>&partner_id=<?php echo urlencode($partnerId); ?>" class="btn-next-step">Lanjut Get Token →</a>
                 <a href="shopee_auth.php" style="display: block; text-align: center; margin-top: 12px; color: #ee4d2d; text-decoration: none; font-size: 13px;">← Kembali ke Authorization</a>
             </div>
         <?php else: ?>
@@ -158,6 +197,69 @@ if (!empty($code) && !empty($shopId)) {
     </script>
 
     <style>
+        .notification {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            animation: slideDown 0.4s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .notification.success {
+            background: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .notif-icon {
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+
+        .notif-content h4 {
+            color: #2e7d32;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 0 4px 0;
+        }
+
+        .notif-content p {
+            color: #555;
+            font-size: 12px;
+            margin: 0;
+        }
+
+        .btn-next-step {
+            display: block;
+            width: 100%;
+            background: #ee4d2d;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 12px;
+            transition: background 0.2s;
+        }
+
+        .btn-next-step:hover {
+            background: #d4411d;
+        }
+
         .token-result {
             display: none;
             margin-top: 20px;
