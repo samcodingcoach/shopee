@@ -1,5 +1,5 @@
 <?php
-$redirect_url = "http://127.0.0.1/";
+$redirect_url = "http://127.0.0.1/shopee/get_code.php";
 
 // Fetch app list from API
 $api_url = "http://" . $_SERVER['HTTP_HOST'] . "/shopee/api/app/list.php";
@@ -29,12 +29,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Check if code and shop_id are both null/empty
     if (empty($app_code) && empty($app_shop_id)) {
-        // Step 1: Redirect to Shopee Authorization
+        // Step 1: Redirect to get_code.php for authorization
         $apiPath = "/api/v2/shop/auth_partner";
         $timestamp = time();
         $baseString = $partnerId . $apiPath . $timestamp;
         $sign = hash_hmac('sha256', $baseString, $partnerKey);
         $baseUrl = "https://openplatform.sandbox.test-stable.shopee.sg";
+        $redirectUrl = "http://" . $_SERVER['HTTP_HOST'] . "/shopee/get_code.php?partner_id=" . urlencode($partnerId);
         $finalUrl = $baseUrl . $apiPath . "?partner_id=" . $partnerId . "&timestamp=" . $timestamp . "&sign=" . $sign . "&redirect=" . urlencode($redirectUrl);
         header("Location: " . $finalUrl);
         exit();
@@ -156,10 +157,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const message = document.getElementById('modalMessage');
 
             if (code === '' && shopId === '') {
-                // Kondisi 1: Belum ada code & shop_id, redirect ke Shopee
+                // Kondisi 1: Belum ada code & shop_id, redirect ke get_code.php
                 icon.textContent = '🔐';
                 title.textContent = 'Otorisasi Shopee';
-                message.textContent = 'Anda akan diarahkan ke halaman login Shopee untuk memberikan izin akses. Lanjutkan?';
+                message.textContent = 'Anda akan diarahkan ke halaman otorisasi Shopee. Setelah selesai, kode otorisasi akan diterima. Lanjutkan?';
             } else {
                 // Kondisi 2: Sudah ada code & shop_id, redirect ke get_token.php
                 icon.textContent = '🎟️';
