@@ -1,25 +1,41 @@
 <?php
 
-// 1. Kredensial
-$partnerId = 1231140;
-$partnerKey = "shpk4b64734f78634b7849537747794f4855686168577143656d4d5063694146";
+// 1. Fetch data dari API listwithtoken
+$apiUrl = "http://" . $_SERVER['HTTP_HOST'] . "/shopee/api/app/listwithtoken.php";
+$apiResponse = @file_get_contents($apiUrl);
 
-// 2. Ambil Refresh Token dan Shop ID dari Database Anda
-$shopId = 226985445; // Sesuai dengan ID toko Anda sebelumnya
-$refreshToken = "7947594a4a4f55425045574b6e6e6a4d"; // Masukkan refresh_token terakhir yang Anda miliki
+if ($apiResponse === false) {
+    die("Error: Unable to fetch app list");
+}
+
+$apiData = json_decode($apiResponse, true);
+
+if (!isset($apiData['success']) || !$apiData['success'] || empty($apiData['data'])) {
+    die("Error: No apps with tokens found");
+}
+
+$appList = $apiData['data'];
+
+// 2. Gunakan app pertama sebagai default (bisa diubah sesuai kebutuhan)
+$app = $appList[0];
+
+$partnerId = $app['partner_id'];
+$partnerKey = $app['partner_key'];
+$shopId = $app['shop_id'];
+$refreshToken = $app['refresh_token'];
+$appName = $app['nama_app'];
 
 // 3. Endpoint Refresh Token
 $apiPath = "/api/v2/auth/access_token/get";
 $timestamp = (string)time();
 
-// 4. Generate Signature (Rumus Pendek)
-// Rumus: partner_id + api_path + timestamp
+// 4. Generate Signature
 $baseString = $partnerId . $apiPath . $timestamp;
 $sign = hash_hmac('sha256', $baseString, $partnerKey);
 
 // 5. Rakit URL Sandbox
 $baseUrl = "https://openplatform.sandbox.test-stable.shopee.sg";
-$finalUrl = sprintf("%s%s?partner_id=%s&timestamp=%s&sign=%s", 
+$finalUrl = sprintf("%s%s?partner_id=%s&timestamp=%s&sign=%s",
     $baseUrl, $apiPath, $partnerId, $timestamp, $sign
 );
 
@@ -45,8 +61,35 @@ $response = curl_exec($ch);
 if(curl_errno($ch)){
     echo 'Error: ' . curl_error($ch);
 } else {
-    echo "--- TOKEN BARU ANDA ---\n";
-    echo $response . "\n";
+    $responseData = json_decode($response, true);
+    
+    echo "--- TOKEN BARU UNTUK: " . strtoupper($appName) . " ---\n";
+    echo "Access Token: " . ($responseData['access_token'] ?? 'N/A') . "\n";
+    echo "Refresh Token: " . ($responseData['refresh_token'] ?? 'N/A') . "\n";
+    echo "Expire In: " . ($responseData['expire_in'] ?? 'N/A') . " seconds\n\n";
+    
+    // Update token ke database jika berhasil
+    if (isset($responseData['success']) || isset($responseData['access_token'])) {
+        $updateUrl = "http://" . $_SERVER['HTTP_HOST'] . "/shopee/api/token/update.php";
+        $updateData = json_encode([
+            "id_app" => $app['id_app'],
+            "access_token" => $responseData['access_token'] ?? '',
+            "refresh_token" => $responseData['refresh_token'] ?? ''
+        ]);
+        
+        $ch2 = curl_init($updateUrl);
+        curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch2, CURLOPT_POST, true);
+        curl_setopt($ch2, CURLOPT_POSTFIELDS, $updateData);
+        curl_setopt($ch2, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        
+        $updateResponse = curl_exec($ch2);
+        curl_close($ch2);
+        
+        if ($updateResponse) {
+            echo "Token updated in database successfully!\n";
+        }
+    }
 }
 
 curl_close($ch);
