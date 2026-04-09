@@ -16,19 +16,20 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
-    $query = "SELECT 
-                app.id_app, 
-                app.nama_app, 
-                app.partner_key, 
-                app.partner_id, 
-                app.status_app, 
-                app.`code`, 
-                app.shop_id, 
-                app.created_date, 
-                token.refresh_token 
-              FROM app 
-              INNER JOIN token 
-              ON app.id_app = token.id_app 
+    $query = "SELECT
+                app.id_app,
+                app.nama_app,
+                app.partner_key,
+                app.partner_id,
+                app.status_app,
+                app.`code`,
+                app.shop_id,
+                app.created_date,
+                token.refresh_token,
+                token.created_date as token_date
+              FROM app
+              INNER JOIN token
+              ON app.id_app = token.id_app
               ORDER BY app.created_date DESC";
     
     $result = $conn->query($query);
@@ -39,6 +40,9 @@ try {
 
     $data = [];
     while ($row = $result->fetch_assoc()) {
+        $tokenDate = $row['token_date'];
+        $expTokenDate = date('Y-m-d H:i:s', strtotime($tokenDate . ' +4 hours'));
+        
         $data[] = [
             "id_app" => (int) $row['id_app'],
             "nama_app" => $row['nama_app'],
@@ -49,6 +53,8 @@ try {
             "code" => $row['code'],
             "shop_id" => $row['shop_id'],
             "refresh_token" => $row['refresh_token'],
+            "token_date" => $tokenDate,
+            "exp_token_date" => $expTokenDate,
             "created_date" => $row['created_date']
         ];
     }
