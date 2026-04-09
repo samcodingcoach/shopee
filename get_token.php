@@ -7,6 +7,9 @@ $partnerId = $_GET['partner_id'] ?? '';
 
 $responseData = null;
 $error = null;
+$tokenSaved = false;
+$tokenSaveMessage = '';
+$appName = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && !empty($code) && !empty($shopId) && !empty($partnerId)) {
     // Fetch app data for partner_key
@@ -19,13 +22,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && !empty($code) && !empty($shopId) && 
     ]);
     $api_response = @file_get_contents($api_url, false, $api_context);
     $partnerKey = '';
-    
+    $appId = null;
+
     if ($api_response !== false) {
         $api_data = json_decode($api_response, true);
         if (isset($api_data['success']) && $api_data['success'] && !empty($api_data['data'])) {
             foreach ($api_data['data'] as $app) {
                 if ($app['partner_id'] == $partnerId) {
                     $partnerKey = $app['partner_key'];
+                    $appId = $app['id_app'];
+                    $appName = $app['nama_app'];
                     break;
                 }
             }
@@ -72,6 +78,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && !empty($code) && !empty($shopId) && 
             $error = 'cURL Error: ' . curl_error($ch);
         } else {
             $responseData = json_decode($response, true);
+            
+            // Save token to database if successful
+            if (isset($responseData['access_token']) && isset($responseData['refresh_token']) && $appId) {
+                $api_token_url = "http://" . $_SERVER['HTTP_HOST'] . "/shopee/api/token/new.php";
+                $token_data = json_encode([
+                    "id_app" => $appId,
+                    "access_token" => $responseData['access_token'],
+                    "refresh_token" => $responseData['refresh_token']
+                ]);
+                
+                $ch2 = curl_init($api_token_url);
+                curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch2, CURLOPT_POST, true);
+                curl_setopt($ch2, CURLOPT_POSTFIELDS, $token_data);
+                curl_setopt($ch2, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+                
+                $token_response = curl_exec($ch2);
+                curl_close($ch2);
+                
+                if ($token_response) {
+                    $token_result = json_decode($token_response, true);
+                    $tokenSaved = $token_result['success'] ?? false;
+                    $tokenSaveMessage = $token_result['message'] ?? '';
+                }
+            }
         }
 
         curl_close($ch);
@@ -107,6 +138,50 @@ if (isset($_POST['export']) && !empty($_POST['token_data'])) {
     <title>Get Token - Shopee</title>
     <link rel="stylesheet" href="css/styles.css">
     <style>
+        .notification {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            animation: slideDown 0.4s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .notification.success {
+            background: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .notif-icon {
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+
+        .notif-content h4 {
+            color: #2e7d32;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 0 4px 0;
+        }
+
+        .notif-content p {
+            color: #555;
+            font-size: 12px;
+            margin: 0;
+        }
+
         .token-result {
             display: none;
             margin-top: 20px;
@@ -237,6 +312,16 @@ if (isset($_POST['export']) && !empty($_POST['token_data'])) {
             </form>
         <?php else: ?>
             <?php if ($responseData): ?>
+                <?php if ($tokenSaved): ?>
+                    <div class="notification success">
+                        <div class="notif-icon">✅</div>
+                        <div class="notif-content">
+                            <h4>Token Tersimpan!</h4>
+                            <p>Access token dan refresh token untuk <strong><?php echo htmlspecialchars($appName); ?></strong> telah disimpan.</p>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
                 <?php
                 $expireIn = $responseData['expire_in'] ?? 0;
                 $expireDate = date('d/m/Y H:i:s', strtotime('+' . $expireIn . ' seconds'));
