@@ -7,3 +7,11 @@ status_app tinyint 0 = Developing , 1 = Live Production
 created_date datetime
 code text
 shop_id text
+
+table : token
+
+id_token int auto increment PK
+id_app int
+access_token text
+refresh_token text
+created_date datetime (auto insert)
