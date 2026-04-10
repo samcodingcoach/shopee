@@ -108,6 +108,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="footer">
             Sandbox Environment
+            <div style="margin-top: 8px; display: flex; gap: 12px; justify-content: center;">
+                <a href="admin/item.php" style="color: #ee4d2d; text-decoration: none; font-size: 11px; font-weight: 500;">📦 Admin</a>
+                <span style="color: #ddd;">|</span>
+                <a href="refresh_token.php" style="color: #ee4d2d; text-decoration: none; font-size: 11px; font-weight: 500;">🔄 Refresh Token</a>
+            </div>
         </div>
     </div>
 

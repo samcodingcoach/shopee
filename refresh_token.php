@@ -222,6 +222,11 @@ if (isset($_POST['export']) && !empty($_POST['token_data'])) {
 
         <div class="footer">
             Sandbox Environment
+            <div style="margin-top: 8px; display: flex; gap: 12px; justify-content: center;">
+                <a href="admin/item.php" style="color: #ee4d2d; text-decoration: none; font-size: 11px; font-weight: 500;">📦 Admin</a>
+                <span style="color: #ddd;">|</span>
+                <a href="shopee_auth.php" style="color: #ee4d2d; text-decoration: none; font-size: 11px; font-weight: 500;">🔑 Authorization</a>
+            </div>
         </div>
     </div>
 
