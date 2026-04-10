@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Shopee Authorization</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
-<body>
+<body class="auth-body">
     <div class="card">
         <div class="header">
             <h1>Shopee Authorization</h1>
