@@ -13,6 +13,13 @@
                 <span>Produk</span>
             </a>
         </li>
-      
+
+        <li class="sidebar-menu-item">
+            <a href="partner.php" class="sidebar-menu-link <?php echo basename($_SERVER['PHP_SELF']) === 'partner.php' ? 'active' : ''; ?>">
+                <span class="sidebar-menu-icon">📱</span>
+                <span>Application</span>
+            </a>
+        </li>
+
     </ul>
 </aside>
