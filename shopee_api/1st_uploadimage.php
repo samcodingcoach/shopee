@@ -1,8 +1,38 @@
 <?php
 
-// 1. Kredensial Anda
-$partnerId = 1231140;
-$partnerKey = "shpk4b64734f78634b7849537747794f4855686168577143656d4d5063694146";
+// require_once __DIR__ . '/../config/koneksi.php';
+
+// Get id_app from GET parameter
+$id_app = $_GET['id_app'] ?? null;
+
+if (!$id_app) {
+    echo json_encode([
+        "success" => false,
+        "message" => "Parameter id_app is required"
+    ]);
+    exit;
+}
+
+// Fetch app credentials from database
+$query = "SELECT partner_id, partner_key, shop_id FROM app WHERE id_app = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $id_app);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if (!$row = $result->fetch_assoc()) {
+    echo json_encode([
+        "success" => false,
+        "message" => "App not found with id_app: " . $id_app
+    ]);
+    exit;
+}
+
+$partnerId = $row['partner_id'];
+$partnerKey = $row['partner_key'];
+$shopId = $row['shop_id'];
+
+$stmt->close();
 
 // 2. Endpoint & Waktu Dinamis
 $apiPath = "/api/v2/media_space/upload_image";
@@ -14,7 +44,7 @@ $sign = hash_hmac('sha256', $baseString, $partnerKey);
 
 // 4. Rakit URL Final Sandbox
 $baseUrl = "https://openplatform.sandbox.test-stable.shopee.sg";
-$finalUrl = sprintf("%s%s?partner_id=%s&timestamp=%s&sign=%s", 
+$finalUrl = sprintf("%s%s?partner_id=%s&timestamp=%s&sign=%s",
     $baseUrl, $apiPath, $partnerId, $timestamp, $sign
 );
 
@@ -32,7 +62,7 @@ curl_setopt_array($curl, array(
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST => true,
     CURLOPT_POSTFIELDS => $postData,
-    // Header Content-Type multipart/form-data tidak perlu ditulis manual, 
+    // Header Content-Type multipart/form-data tidak perlu ditulis manual,
     // cURL PHP otomatis mengaturnya saat melihat CURLFILE
 ));
 
@@ -45,7 +75,7 @@ if ($err) {
 } else {
     echo "--- HASIL UPLOAD --- \n";
     // Trik agar JSON tampil rapi
-    echo json_encode(json_decode($response), JSON_PRETTY_PRINT); 
+    echo json_encode(json_decode($response), JSON_PRETTY_PRINT);
 }
 
 ?>

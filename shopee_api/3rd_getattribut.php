@@ -1,30 +1,72 @@
 <?php
 
-// 1. Kredensial & Token
-$partnerId = 1231140;
-$partnerKey = "shpk4b64734f78634b7849537747794f4855686168577143656d4d5063694146";
-$shopId = 226985445; 
-$accessToken = "eyJhbGciOiJIUzI1NiJ9.CKSSSxABGOWLnmwgASjlpfbOBjCbiO6iDTgBQAE.HsiAGXhtTFJ-jQ9_8zCHxjCDIu-RoNgK48FZlY4-HBI"; // Pastikan token masih aktif
+// require_once __DIR__ . '/../config/koneksi.php';
 
-// 2. PERBAIKAN: Endpoint yang benar untuk API v2
+// Get id_app from GET parameter
+$id_app = $_GET['id_app'] ?? null;
+
+if (!$id_app) {
+    echo json_encode([
+        "success" => false,
+        "message" => "Parameter id_app is required"
+    ]);
+    exit;
+}
+
+// Fetch app credentials and token from database
+$query = "SELECT a.partner_id, a.partner_key, a.shop_id, t.access_token 
+          FROM app a
+          LEFT JOIN token t ON a.id_app = t.id_app
+          WHERE a.id_app = ?
+          ORDER BY t.created_date DESC
+          LIMIT 1";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $id_app);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if (!$row = $result->fetch_assoc()) {
+    echo json_encode([
+        "success" => false,
+        "message" => "App not found with id_app: " . $id_app
+    ]);
+    exit;
+}
+
+$partnerId = $row['partner_id'];
+$partnerKey = $row['partner_key'];
+$shopId = $row['shop_id'];
+$accessToken = $row['access_token'];
+
+if (!$accessToken) {
+    echo json_encode([
+        "success" => false,
+        "message" => "No access token found for this app. Please authorize first."
+    ]);
+    exit;
+}
+
+$stmt->close();
+
+// PERBAIKAN: Endpoint yang benar untuk API v2
 $apiPath = "/api/v2/product/get_attribute_tree";
 $timestamp = (string)time();
 
-// 3. Generate Signature (Rumus Panjang)
+// Generate Signature (Rumus Panjang)
 $baseString = $partnerId . $apiPath . $timestamp . $accessToken . $shopId;
 $sign = hash_hmac('sha256', $baseString, $partnerKey);
 
-// 4. Parameter URL
-$language = "id"; 
-$categoryId = 301034; // ID Kategori Jam Tangan yang Anda koreksi
+// Parameter URL
+$language = "id";
+$categoryId = $_GET['category_id'] ?? 301034; // ID Kategori (default: Jam Tangan, bisa diubah via parameter)
 
-// 5. Rakit URL Sandbox
+// Rakit URL Sandbox
 $baseUrl = "https://openplatform.sandbox.test-stable.shopee.sg";
-$finalUrl = sprintf("%s%s?partner_id=%s&timestamp=%s&access_token=%s&shop_id=%s&sign=%s&language=%s&category_id=%s", 
+$finalUrl = sprintf("%s%s?partner_id=%s&timestamp=%s&access_token=%s&shop_id=%s&sign=%s&language=%s&category_id=%s",
     $baseUrl, $apiPath, $partnerId, $timestamp, $accessToken, $shopId, $sign, $language, $categoryId
 );
 
-// 6. Eksekusi Request GET
+// Eksekusi Request GET
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, $finalUrl);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -34,7 +76,7 @@ $response = curl_exec($ch);
 if(curl_errno($ch)){
     echo 'Error: ' . curl_error($ch);
 } else {
-    echo "--- DAFTAR ATRIBUT UNTUK KATEGORI (301034) ---\n";
+    echo "--- DAFTAR ATRIBUT UNTUK KATEGORI ($categoryId) ---\n";
     echo json_encode(json_decode($response), JSON_PRETTY_PRINT);
 }
 
