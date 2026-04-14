@@ -1,9 +1,9 @@
 <?php
 
-// require_once __DIR__ . '/../config/koneksi.php';
+require_once __DIR__ . '/../config/koneksi.php';
 
-// Get id_app from GET parameter
-$id_app = $_GET['id_app'] ?? null;
+// Get id_app from POST or GET parameter
+$id_app = $_POST['id_app'] ?? $_GET['id_app'] ?? null;
 
 if (!$id_app) {
     echo json_encode([
@@ -34,6 +34,45 @@ $shopId = $row['shop_id'];
 
 $stmt->close();
 
+// Check if image was uploaded via POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+    // Validate file size (max 1MB)
+    if ($_FILES['image']['size'] > 1048576) {
+        echo json_encode([
+            "success" => false,
+            "message" => "File size exceeds 1MB limit"
+        ], JSON_PRETTY_PRINT);
+        exit;
+    }
+    
+    // Validate file type (JPG only)
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mime_type = finfo_file($finfo, $_FILES['image']['tmp_name']);
+    finfo_close($finfo);
+    
+    if (!in_array($mime_type, ['image/jpeg', 'image/jpg'])) {
+        echo json_encode([
+            "success" => false,
+            "message" => "Only JPG files are allowed"
+        ], JSON_PRETTY_PRINT);
+        exit;
+    }
+    
+    $imagePath = $_FILES['image']['tmp_name'];
+    $cFile = new CURLFILE($imagePath, 'image/jpeg', $_FILES['image']['name']);
+} else {
+    // Fallback for direct script access (use default image)
+    $imagePath = __DIR__ . '/../images/JamTangan1.jpg';
+    if (!file_exists($imagePath)) {
+        echo json_encode([
+            "success" => false,
+            "message" => "No image uploaded or default image not found"
+        ], JSON_PRETTY_PRINT);
+        exit;
+    }
+    $cFile = new CURLFILE($imagePath);
+}
+
 // 2. Endpoint & Waktu Dinamis
 $apiPath = "/api/v2/media_space/upload_image";
 $timestamp = (string)time(); // Akan selalu mengikuti waktu server saat skrip dijalankan
@@ -42,17 +81,13 @@ $timestamp = (string)time(); // Akan selalu mengikuti waktu server saat skrip di
 $baseString = $partnerId . $apiPath . $timestamp;
 $sign = hash_hmac('sha256', $baseString, $partnerKey);
 
-// 4. Rakit URL Final Sandbox
+// 4. Rakit URL Final
 $baseUrl = "https://openplatform.sandbox.test-stable.shopee.sg";
 $finalUrl = sprintf("%s%s?partner_id=%s&timestamp=%s&sign=%s",
     $baseUrl, $apiPath, $partnerId, $timestamp, $sign
 );
 
-// 5. Siapkan File Gambar menggunakan CURLFILE
-// Sesuaikan absolute path ini dengan struktur direktori di server Debian Anda
-// Contoh: '/var/www/html/project/assets/gambar1.jpg'
-$imagePath = '../images/JamTangan1.jpg'; // Pastikan path ini benar dan file gambar ada
-$cFile = new CURLFILE($imagePath);
+// 5. Siapkan POST Data
 $postData = array('image' => $cFile);
 
 // 6. Eksekusi cURL
