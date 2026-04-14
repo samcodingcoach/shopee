@@ -1,4 +1,9 @@
 <?php
+// 1. MULAI BUFFERING: Tahan semua output (termasuk spasi liar dari file lain)
+ob_start();
+
+// 2. SET HEADER: Wajib agar halaman yang consume tahu ini murni JSON
+header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../config/koneksi.php';
 
@@ -6,10 +11,8 @@ require_once __DIR__ . '/../config/koneksi.php';
 $id_app = $_GET['id_app'] ?? null;
 
 if (!$id_app) {
-    echo json_encode([
-        "success" => false,
-        "message" => "Parameter id_app is required"
-    ]);
+    ob_clean(); // Bersihkan layar
+    echo json_encode(["success" => false, "message" => "Parameter id_app is required"]);
     exit;
 }
 
@@ -26,10 +29,8 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if (!$row = $result->fetch_assoc()) {
-    echo json_encode([
-        "success" => false,
-        "message" => "App not found with id_app: " . $id_app
-    ]);
+    ob_clean();
+    echo json_encode(["success" => false, "message" => "App not found with id_app: " . $id_app]);
     exit;
 }
 
@@ -37,26 +38,23 @@ $partnerId = $row['partner_id'];
 $partnerKey = $row['partner_key'];
 $shopId = $row['shop_id'];
 $accessToken = $row['access_token'];
+$stmt->close();
 
 if (!$accessToken) {
-    echo json_encode([
-        "success" => false,
-        "message" => "No access token found for this app. Please authorize first."
-    ]);
+    ob_clean();
+    echo json_encode(["success" => false, "message" => "No access token found. Please authorize first."]);
     exit;
 }
-
-$stmt->close();
 
 // Endpoint Get Channel List
 $apiPath = "/api/v2/logistics/get_channel_list";
 $timestamp = (string)time();
 
-// Generate Signature (Rumus Panjang)
+// Generate Signature
 $baseString = $partnerId . $apiPath . $timestamp . $accessToken . $shopId;
 $sign = hash_hmac('sha256', $baseString, $partnerKey);
 
-// Rakit URL Sandbox (Tanpa parameter tambahan)
+// Rakit URL Sandbox
 $baseUrl = "https://openplatform.sandbox.test-stable.shopee.sg";
 $finalUrl = sprintf("%s%s?partner_id=%s&timestamp=%s&access_token=%s&shop_id=%s&sign=%s",
     $baseUrl, $apiPath, $partnerId, $timestamp, $accessToken, $shopId, $sign
@@ -69,15 +67,35 @@ curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
 $response = curl_exec($ch);
 
+// 3. SEBELUM MENCETAK JSON, BERSIHKAN SEMUA OUTPUT YANG MUNGKIN BOCOR SEBELUMNYA
+ob_clean(); 
+
 if(curl_errno($ch)){
     echo json_encode([
         "success" => false,
         "message" => "cURL Error: " . curl_error($ch)
-    ], JSON_PRETTY_PRINT);
+    ]);
 } else {
-    echo json_encode(json_decode($response), JSON_PRETTY_PRINT);
+    // 4. PEMBERSIHAN EKSTRIM UNTUK SHOPEE SANDBOX
+    // Menghapus SEMUA karakter kontrol ASCII (0-31) yang bentuknya fisik (enter, tab, dsb)
+    // yang melanggar standar JSON murni.
+    $clean_response = preg_replace('/[\x00-\x1F]/', ' ', $response);
+    
+    $decoded = json_decode($clean_response);
+    
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        // Jika karena alasan ajaib JSON masih gagal dibaca
+        echo json_encode([
+            "success" => false,
+            "message" => "Gagal memproses JSON dari Shopee: " . json_last_error_msg()
+        ]);
+    } else {
+        // Sukses! Cetak JSON bersih.
+        echo json_encode($decoded); 
+        // Catatan: Saya hapus JSON_PRETTY_PRINT karena untuk di-consume mesin,
+        // format rapat (minified) jauh lebih cepat dan aman.
+    }
 }
 
 curl_close($ch);
-
 ?>

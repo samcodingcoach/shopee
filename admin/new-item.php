@@ -162,7 +162,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
                     }
                     
                     // Try different response structures
-                    if (isset($response_data['response']['logistics'])) {
+                    if (isset($response_data['response']['logistics_channel_list'])) {
+                        $logistics = $response_data['response']['logistics_channel_list'];
+                    } elseif (isset($response_data['response']['logistics'])) {
                         $logistics = $response_data['response']['logistics'];
                     } elseif (isset($response_data['response'])) {
                         // Some APIs return logistics directly under response
@@ -172,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
                     } elseif (isset($response_data['channel_list'])) {
                         $logistics = $response_data['channel_list'];
                     }
-                    
+
                     // If logistics is empty and debug mode, show raw response
                     if (empty($logistics) && isset($response_data)) {
                         $logistics = [];
@@ -275,53 +277,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
 
             <?php if (!empty($logistics)): ?>
                 <h3>Select Logistics Courier</h3>
-                <form method="POST">
-                    <input type="hidden" name="image_id" value="<?php echo htmlspecialchars($image_id); ?>">
-                    <input type="hidden" name="category_id" value="<?php echo htmlspecialchars($category_id); ?>">
-                    <input type="hidden" name="id_app" value="<?php echo htmlspecialchars($_POST['id_app']); ?>">
-                    
-                    <table border="1" cellpadding="8" cellspacing="0">
-                        <thead>
+                <table border="1" cellpadding="8" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Select</th>
+                            <th>Logistic ID</th>
+                            <th>Logistic Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($logistics as $logistic):
+                            $logistic_id = $logistic['logistics_channel_id'] ?? ($logistic['logistic_id'] ?? ($logistic['channel_id'] ?? 'N/A'));
+                            $logistic_name = $logistic['logistics_channel_name'] ?? ($logistic['logistic_name'] ?? ($logistic['name'] ?? '-'));
+                        ?>
                             <tr>
-                                <th>Select</th>
-                                <th>Logistic ID</th>
-                                <th>Logistic Name</th>
-                                <th>Description</th>
-                                <th>Size Type</th>
+                                <td>
+                                    <input type="radio" name="logistic_radio" value="<?php echo htmlspecialchars($logistic_id); ?>"
+                                           onclick="document.getElementById('logistic_id_field').value = this.value;"
+                                           <?php echo ($selected_logistic == $logistic_id) ? 'checked' : ''; ?>>
+                                </td>
+                                <td><?php echo htmlspecialchars($logistic_id); ?></td>
+                                <td><?php echo htmlspecialchars($logistic_name); ?></td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($logistics as $logistic): 
-                                $logistic_id = $logistic['logistic_id'] ?? ($logistic['channel_id'] ?? 'N/A');
-                                $logistic_name = $logistic['logistic_name'] ?? ($logistic['name'] ?? '-');
-                                $description = $logistic['description'] ?? '-';
-                                $size_type = $logistic['size_type'] ?? ($logistic['dimension_type'] ?? '-');
-                            ?>
-                                <tr>
-                                    <td>
-                                        <input type="radio" name="logistic_id" value="<?php echo htmlspecialchars($logistic_id); ?>"
-                                               <?php echo ($selected_logistic == $logistic_id) ? 'checked' : ''; ?>
-                                               required>
-                                    </td>
-                                    <td><?php echo htmlspecialchars($logistic_id); ?></td>
-                                    <td><?php echo htmlspecialchars($logistic_name); ?></td>
-                                    <td><?php echo htmlspecialchars($description); ?></td>
-                                    <td><?php echo htmlspecialchars($size_type); ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                    <br>
-                    <button type="submit" name="select_logistic">Select Courier</button>
-                </form>
-
-                <?php if ($selected_logistic): ?>
-                    <h3>Selected Logistics</h3>
-                    <p>
-                        <label>Logistic ID:</label><br>
-                        <input type="text" value="<?php echo htmlspecialchars($selected_logistic); ?>" readonly style="width: 400px; font-family: monospace;">
-                    </p>
-                <?php endif; ?>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+                <br>
+                <p>
+                    <label>Logistic ID:</label><br>
+                    <input type="text" id="logistic_id_field" value="<?php echo htmlspecialchars($selected_logistic); ?>" readonly style="width: 400px; font-family: monospace;">
+                </p>
             <?php elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['select_category'])): ?>
                 <p style="color: orange;">
                     No logistics available.
