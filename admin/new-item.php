@@ -15,6 +15,7 @@ $category_id = "";
 $logistics = [];
 $selected_logistic = "";
 $error_message = "";
+$product_result = "";
 
 // Fetch categories for dropdown
 $categories_query = "SELECT category_id, display_category_name FROM category_api ORDER BY display_category_name ASC";
@@ -209,6 +210,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
     $image_id = $_POST['image_id'] ?? '';
     $category_id = $_POST['category_id'] ?? '';
     $selected_logistic = $_POST['logistic_id'] ?? '';
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_product'])) {
+    // Collect all product data
+    $product_data = [
+        'id_app' => $_POST['id_app'] ?? '',
+        'item_name' => $_POST['item_name'] ?? '',
+        'original_price' => $_POST['original_price'] ?? 0,
+        'description' => $_POST['description'] ?? '',
+        'weight' => $_POST['weight'] ?? 0.3,
+        'item_status' => $_POST['item_status'] ?? 'NORMAL',
+        'item_sku' => $_POST['item_sku'] ?? '',
+        'condition' => $_POST['condition'] ?? 'NEW',
+        'stock' => $_POST['stock'] ?? 50,
+        'wholesale_min' => $_POST['wholesale_min'] ?? 10,
+        'wholesale_max' => $_POST['wholesale_max'] ?? 10,
+        'wholesale_price' => $_POST['wholesale_price'] ?? 0,
+        'package_height' => $_POST['package_height'] ?? 10,
+        'package_length' => $_POST['package_length'] ?? 15,
+        'package_width' => $_POST['package_width'] ?? 10,
+        'logistic_id' => $_POST['logistic_id'] ?? 81017,
+        'image_id' => $_POST['image_id'] ?? '',
+        'category_id' => $_POST['category_id'] ?? 301034
+    ];
+
+    // Call creating product API
+    if ($product_data['id_app']) {
+        $ch = curl_init();
+        $api_url = "http://" . $_SERVER['HTTP_HOST'] . "/shopee/shopee_api/5th_creatingproduct.php?id_app=" . $product_data['id_app'];
+        
+        curl_setopt($ch, CURLOPT_URL, $api_url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $product_data);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded']);
+
+        $response = curl_exec($ch);
+        $curl_error = curl_error($ch);
+        curl_close($ch);
+
+        if ($curl_error) {
+            $error_message = "cURL Error: " . $curl_error;
+        } else {
+            $create_response = json_decode($response, true);
+            $product_result = $response; // Store for display
+        }
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -307,6 +353,120 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
                     <label>Logistic ID:</label><br>
                     <input type="text" id="logistic_id_field" value="<?php echo htmlspecialchars($selected_logistic); ?>" readonly style="width: 400px; font-family: monospace;">
                 </p>
+
+                <script>
+                    // Sync radio button selection to hidden logistic_id field in product form
+                    document.querySelectorAll('input[name="logistic_radio"]').forEach(radio => {
+                        radio.addEventListener('change', function() {
+                            document.getElementById('logistic_id_field').value = this.value;
+                            document.getElementById('hidden_logistic_id').value = this.value;
+                        });
+                    });
+                    // Set initial value if radio is pre-checked
+                    const checkedRadio = document.querySelector('input[name="logistic_radio"]:checked');
+                    if (checkedRadio) {
+                        document.getElementById('hidden_logistic_id').value = checkedRadio.value;
+                    }
+                </script>
+
+                <h3>Product Information</h3>
+                <form method="POST">
+                    <input type="hidden" name="image_id" value="<?php echo htmlspecialchars($image_id); ?>">
+                    <input type="hidden" name="category_id" value="<?php echo htmlspecialchars($category_id); ?>">
+                    <input type="hidden" name="id_app" value="<?php echo htmlspecialchars($_POST['id_app'] ?? ''); ?>">
+                    <input type="hidden" name="logistic_id" id="hidden_logistic_id" value="<?php echo htmlspecialchars($selected_logistic); ?>">
+
+                    <p>
+                        <label>Item Name: *</label><br>
+                        <input type="text" name="item_name" required style="width: 400px;">
+                    </p>
+
+                    <p>
+                        <label>Original Price: *</label><br>
+                        <input type="number" name="original_price" required style="width: 400px;" placeholder="e.g. 350000">
+                    </p>
+
+                    <p>
+                        <label>Description: *</label><br>
+                        <textarea name="description" rows="5" required style="width: 400px;"></textarea>
+                    </p>
+
+                    <p>
+                        <label>Weight (kg): *</label><br>
+                        <input type="number" step="0.01" name="weight" required style="width: 400px;" placeholder="e.g. 0.3">
+                    </p>
+
+                    <p>
+                        <label>Item Status:</label><br>
+                        <select name="item_status" style="width: 400px;">
+                            <option value="NORMAL">NORMAL</option>
+                            <option value="UNLIST">UNLIST</option>
+                        </select>
+                    </p>
+
+                    <hr>
+
+                    <p>
+                        <label>Item SKU:</label><br>
+                        <input type="text" name="item_sku" style="width: 400px;" placeholder="e.g. JAM-PRIA-001">
+                    </p>
+
+                    <p>
+                        <label>Condition:</label><br>
+                        <select name="condition" style="width: 400px;">
+                            <option value="NEW">NEW</option>
+                            <option value="USED">USED</option>
+                        </select>
+                    </p>
+
+                    <p>
+                        <label>Stock: *</label><br>
+                        <input type="number" name="stock" required style="width: 400px;" value="50">
+                    </p>
+
+                    <hr>
+
+                    <h4>Wholesale (Optional)</h4>
+                    <p>
+                        <label>Wholesale Min Count:</label><br>
+                        <input type="number" name="wholesale_min" style="width: 400px;" value="10">
+                    </p>
+
+                    <p>
+                        <label>Wholesale Max Count:</label><br>
+                        <input type="number" name="wholesale_max" style="width: 400px;" value="10">
+                    </p>
+
+                    <p>
+                        <label>Wholesale Unit Price:</label><br>
+                        <input type="number" name="wholesale_price" style="width: 400px;" placeholder="Must be below original price">
+                    </p>
+
+                    <hr>
+
+                    <h4>Package Dimensions</h4>
+                    <p>
+                        <label>Package Height (cm):</label><br>
+                        <input type="number" name="package_height" style="width: 400px;" value="10">
+                    </p>
+
+                    <p>
+                        <label>Package Length (cm):</label><br>
+                        <input type="number" name="package_length" style="width: 400px;" value="15">
+                    </p>
+
+                    <p>
+                        <label>Package Width (cm):</label><br>
+                        <input type="number" name="package_width" style="width: 400px;" value="10">
+                    </p>
+
+                    <hr>
+
+                    <p>
+                        <button type="submit" name="create_product">Create Product</button>
+                    </p>
+                </form>
+
             <?php elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['select_category'])): ?>
                 <p style="color: orange;">
                     No logistics available.
@@ -322,6 +482,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
                 </p>
             <?php endif; ?>
         <?php endif; ?>
+    <?php endif; ?>
+
+    <?php if ($product_result): ?>
+        <h3>Product Creation Result</h3>
+        <textarea rows="15" cols="80" readonly style="width: 100%; font-family: monospace;"><?php echo htmlspecialchars($product_result); ?></textarea>
     <?php endif; ?>
 </body>
 </html>

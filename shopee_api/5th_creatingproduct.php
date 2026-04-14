@@ -1,6 +1,6 @@
 <?php
 
-// require_once __DIR__ . '/../config/koneksi.php';
+require_once __DIR__ . '/../config/koneksi.php';
 
 // Get id_app from GET parameter
 $id_app = $_GET['id_app'] ?? null;
