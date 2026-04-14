@@ -4,7 +4,7 @@
 $partnerId = 1231140;
 $partnerKey = "shpk4b64734f78634b7849537747794f4855686168577143656d4d5063694146";
 $shopId = 226985445; 
-$accessToken = "MASUKKAN_ACCESS_TOKEN_ANDA_YANG_AKTIF"; // Pastikan token masih aktif
+$accessToken = "eyJhbGciOiJIUzI1NiJ9.CKSSSxABGOWLnmwgASjlpfbOBjCbiO6iDTgBQAE.HsiAGXhtTFJ-jQ9_8zCHxjCDIu-RoNgK48FZlY4-HBI"; // Pastikan token masih aktif
 
 // 2. Endpoint Get Channel List
 $apiPath = "/api/v2/logistics/get_channel_list";
