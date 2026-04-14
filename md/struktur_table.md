@@ -15,3 +15,11 @@ id_app int
 access_token text
 refresh_token text
 created_date datetime (auto insert)
+
+table category_api
+parent_category_id varchar 10
+category_id varchar 10 Primary Key
+original_category_name varchar 50
+display_category_name varchar 60
+aktif tinyint 4
+has_children tinyint 4

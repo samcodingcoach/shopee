@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Upload Image - Shopee</title>
+    <title>Shopee New Product</title>
 </head>
 <body>
     <h2>Upload Image to Shopee</h2>
