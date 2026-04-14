@@ -70,9 +70,11 @@ curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 $response = curl_exec($ch);
 
 if(curl_errno($ch)){
-    echo 'Error: ' . curl_error($ch);
+    echo json_encode([
+        "success" => false,
+        "message" => "cURL Error: " . curl_error($ch)
+    ], JSON_PRETTY_PRINT);
 } else {
-    echo "--- DAFTAR KURIR LOGISTIK SHOPEE SANDBOX ---\n";
     echo json_encode(json_decode($response), JSON_PRETTY_PRINT);
 }
 

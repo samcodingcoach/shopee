@@ -71,10 +71,11 @@ $err = curl_error($curl);
 curl_close($curl);
 
 if ($err) {
-    echo "cURL Error #:" . $err;
+    echo json_encode([
+        "success" => false,
+        "message" => "cURL Error: " . $err
+    ], JSON_PRETTY_PRINT);
 } else {
-    echo "--- HASIL UPLOAD --- \n";
-    // Trik agar JSON tampil rapi
     echo json_encode(json_decode($response), JSON_PRETTY_PRINT);
 }
 
