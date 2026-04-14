@@ -69,6 +69,19 @@ $productData = [
     "weight" => $_POST['weight'] ?? 0.3, // Berat dalam Kilogram
     "item_name" => $_POST['item_name'] ?? "Jam Tangan Pria Anti Air Premium",
     "item_status" => $_POST['item_status'] ?? "NORMAL",
+    
+    // --- PENAMBAHAN SKU, KONDISI, & GROSIR ---
+    "item_sku" => $_POST['item_sku'] ?? "JAM-PRIA-001",
+    "condition" => $_POST['condition'] ?? "NEW",
+    "wholesale" => [
+        [
+            "min_count" => $_POST['wholesale_min'] ?? 10,
+            "max_count" => $_POST['wholesale_max'] ?? 10,
+            "unit_price" => $_POST['wholesale_price'] ?? 140000 // Harga harus di bawah original_price
+        ]
+    ],
+    // -----------------------------------------
+
     "seller_stock" => [
         [
             "stock" => $_POST['stock'] ?? 50
