@@ -14,10 +14,12 @@ $category_id = "";
 $logistics = [];
 $selected_logistic = "";
 $error_message = "";
+$success_message = "";
 $product_result = "";
 $attributes = [];
 $form_data = [];
 $debug_attr_error = "";
+$step = 1; // 1: Upload, 2: Category, 3: Logistics, 4: Product Form
 
 $categories_query = "SELECT category_id, display_category_name FROM category_api ORDER BY display_category_name ASC";
 $categories_result = $conn->query($categories_query);
@@ -89,6 +91,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
                         $response_data = json_decode($response, true);
                         if (isset($response_data['response']['image_info']['image_id'])) {
                             $image_id = $response_data['response']['image_info']['image_id'];
+                            $step = 2;
+                            $_POST['id_app_hidden'] = $id_app;
                         } else {
                             $error_message = "Failed to upload image. Response: " . $response;
                         }
@@ -102,6 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
     $image_id = $_POST['image_id'] ?? '';
     $category_id = $_POST['category_id'] ?? '';
     $id_app = $_POST['id_app'] ?? '';
+    $step = 2;
 
     if ($id_app) {
         $query = "SELECT a.partner_id, a.partner_key, a.shop_id, t.access_token
@@ -155,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
                     }
 
                     // --- GET ATTRIBUTE TREE ---
-                    $apiPathAttr = "/api/v2/product/get_attribute_tree"; 
+                    $apiPathAttr = "/api/v2/product/get_attribute_tree";
                     $timestampAttr = (string)time();
                     $baseStringAttr = $partnerId . $apiPathAttr . $timestampAttr . $accessToken . $shopId;
                     $signAttr = hash_hmac('sha256', $baseStringAttr, $partnerKey);
@@ -226,11 +231,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
                                 $attr['attribute_value_list'] = $processed_values;
                                 $attributes[] = $attr;
                             }
+                            $step = 4;
                         }
                     } else {
                         $debug_attr_error = "Tidak ada respons dari API Atribut Shopee.";
                     }
-                    // --------------------------------------
 
                     $form_data = [
                         'item_name' => '', 'original_price' => '', 'description' => '',
@@ -254,8 +259,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
     $image_id = $_POST['image_id'] ?? '';
     $category_id = $_POST['category_id'] ?? '';
     $selected_logistic = $_POST['logistic_id'] ?? '';
+    $step = 3;
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_product'])) {
-    
+
     $product_data = [
         'id_app' => $_POST['id_app'] ?? '',
         'item_name' => $_POST['item_name'] ?? '',
@@ -281,11 +287,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
     if ($product_data['id_app']) {
         $ch = curl_init();
         $api_url = "http://" . $_SERVER['HTTP_HOST'] . "/shopee/shopee_api/5th_creatingproduct.php?id_app=" . $product_data['id_app'];
-        
+
         curl_setopt($ch, CURLOPT_URL, $api_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
-        // Membungkus payload post dengan http_build_query
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($product_data));
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded']);
 
@@ -296,276 +301,527 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
         if ($curl_error) {
             $error_message = "cURL Error: " . $curl_error;
         } else {
-            $product_result = $response;
+            $product_result = json_decode($response, true);
+            if (isset($product_result['response']['item_id'])) {
+                $success_message = "Produk berhasil dibuat dengan ID: " . $product_result['response']['item_id'];
+            } else {
+                $error_message = "Gagal membuat produk. Response: " . $response;
+            }
         }
     }
 }
+
+// Determine current step
+if ($category_id && empty($attributes)) {
+    $step = 3;
+}
+if (!empty($attributes)) {
+    $step = 4;
+}
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <title>Shopee New Product</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambah Produk - Shopee Admin</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <style>
+        .form-step {
+            display: none;
+        }
+        .form-step.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        .form-label .required {
+            color: #ee4d2d;
+            margin-left: 4px;
+        }
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #ee4d2d;
+            box-shadow: 0 0 0 2px rgba(238, 77, 45, 0.1);
+        }
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .form-input[readonly] {
+            background: #fafafa;
+            cursor: not-allowed;
+        }
+        .form-help {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #8c8c8c;
+        }
+        .form-section {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #e8e8e8;
+        }
+        .form-section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .step-indicator {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 32px;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 8px;
+        }
+        .step-item {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e8e8e8;
+            color: #8c8c8c;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .step-item.active .step-number {
+            background: #ee4d2d;
+            color: white;
+        }
+        .step-item.completed .step-number {
+            background: #52c41a;
+            color: white;
+        }
+        .step-label {
+            font-size: 12px;
+            color: #8c8c8c;
+        }
+        .step-item.active .step-label {
+            color: #ee4d2d;
+            font-weight: 600;
+        }
+        .logistic-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .logistic-table th,
+        .logistic-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        .logistic-table th {
+            background: #fafafa;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+        .logistic-table tr:hover {
+            background: #fafafa;
+            cursor: pointer;
+        }
+        .logistic-table input[type="radio"] {
+            cursor: pointer;
+        }
+        .success-box {
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+            border-radius: 8px;
+            padding: 24px;
+            text-align: center;
+            margin: 32px 0;
+        }
+        .success-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+        .success-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #52c41a;
+            margin-bottom: 8px;
+        }
+        .success-message {
+            color: #666;
+            margin-bottom: 24px;
+        }
+    </style>
 </head>
-<body>
-    <h2>Upload Image to Shopee</h2>
+<body class="admin-body">
+    <?php include 'navbar.php'; ?>
 
-    <?php if ($error_message): ?>
-        <p style="color: red;"><?php echo htmlspecialchars($error_message); ?></p>
-    <?php endif; ?>
+    <main class="admin-main">
+        <div class="admin-topbar">
+            <h1 class="admin-topbar-title">Tambah Produk Baru</h1>
+        </div>
 
-    <form method="POST" enctype="multipart/form-data">
-        <p>
-            <label>Select App:</label><br>
-            <select name="id_app" required>
-                <option value="">-- Select App --</option>
-                <?php foreach ($apps as $app): ?>
-                    <option value="<?php echo $app['id_app']; ?>" <?php echo (isset($_POST['id_app']) && $_POST['id_app'] == $app['id_app']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($app['nama_app']); ?></option>
-                <?php endforeach; ?>
-            </select>
-        </p>
+        <div class="admin-content">
+            <?php if ($success_message): ?>
+                <div class="success-box">
+                    <div class="success-icon">✅</div>
+                    <div class="success-title">Berhasil!</div>
+                    <div class="success-message"><?php echo htmlspecialchars($success_message); ?></div>
+                    <a href="item.php" class="btn btn-orange">
+                        ← Kembali ke Daftar Produk
+                    </a>
+                </div>
+            <?php else: ?>
+                <?php if ($error_message): ?>
+                    <div class="error-message" style="margin-bottom: 20px;">
+                        <span>⚠️</span>
+                        <span><?php echo htmlspecialchars($error_message); ?></span>
+                    </div>
+                <?php endif; ?>
 
-        <p>
-            <label>Image (JPG, max 1MB):</label><br>
-            <input type="file" name="image" accept=".jpg,.jpeg" required>
-        </p>
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <h2 class="admin-card-title">Form Tambah Produk</h2>
+                    </div>
 
-        <p>
-            <button type="submit" name="upload_image">Upload Image</button>
-        </p>
-    </form>
+                    <div class="admin-card-body" style="padding: 24px;">
+                        <!-- Step Indicator -->
+                        <div class="step-indicator">
+                            <div class="step-item <?php echo $step >= 1 ? ($step > 1 ? 'completed' : 'active') : ''; ?>">
+                                <div class="step-number"><?php echo $step > 1 ? '✓' : '1'; ?></div>
+                                <div class="step-label">Upload Gambar</div>
+                            </div>
+                            <div class="step-item <?php echo $step >= 2 ? ($step > 2 ? 'completed' : 'active') : ''; ?>">
+                                <div class="step-number"><?php echo $step > 2 ? '✓' : '2'; ?></div>
+                                <div class="step-label">Pilih Kategori</div>
+                            </div>
+                            <div class="step-item <?php echo $step >= 3 ? ($step > 3 ? 'completed' : 'active') : ''; ?>">
+                                <div class="step-number"><?php echo $step > 3 ? '✓' : '3'; ?></div>
+                                <div class="step-label">Pilih Kurir</div>
+                            </div>
+                            <div class="step-item <?php echo $step >= 4 ? 'active' : ''; ?>">
+                                <div class="step-number">4</div>
+                                <div class="step-label">Isi Detail</div>
+                            </div>
+                        </div>
 
-    <?php if ($image_id): ?>
-        <h3>Upload Successful!</h3>
-        <p>
-            <label>Image ID:</label><br>
-            <input type="text" id="image_id_display" value="<?php echo htmlspecialchars($image_id); ?>" readonly style="width: 400px; font-family: monospace;">
-        </p>
+                        <!-- Step 1: Upload Image -->
+                        <?php if ($step === 1): ?>
+                        <form method="POST" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Pilih Aplikasi <span class="required">*</span>
+                                </label>
+                                <select name="id_app" class="form-select" required>
+                                    <option value="">-- Pilih Aplikasi --</option>
+                                    <?php foreach ($apps as $app): ?>
+                                        <option value="<?php echo $app['id_app']; ?>" <?php echo (isset($_POST['id_app']) && $_POST['id_app'] == $app['id_app']) ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($app['nama_app']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
 
-        <h3>Select Category</h3>
-        <form method="POST">
-            <input type="hidden" name="image_id" value="<?php echo htmlspecialchars($image_id); ?>">
-            <input type="hidden" name="id_app" value="<?php echo isset($_POST['id_app']) ? htmlspecialchars($_POST['id_app']) : ''; ?>">
-            <p>
-                <label>Category:</label><br>
-                <select name="category_id" required onchange="this.form.submit()">
-                    <option value="">-- Select Category --</option>
-                    <?php foreach ($categories as $cat): ?>
-                        <option value="<?php echo htmlspecialchars($cat['category_id']); ?>" <?php echo ($category_id == $cat['category_id']) ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($cat['display_category_name']); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </p>
-            <input type="hidden" name="select_category" value="1">
-        </form>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Gambar Produk (JPG, maks 1MB) <span class="required">*</span>
+                                </label>
+                                <input type="file" name="image" accept=".jpg,.jpeg" class="form-input" required>
+                                <div class="form-help">Format: JPG, Maksimal ukuran: 1MB</div>
+                            </div>
 
-        <?php if ($category_id): ?>
-            <p>
-                <label>Category ID:</label><br>
-                <input type="text" value="<?php echo htmlspecialchars($category_id); ?>" readonly style="width: 400px; font-family: monospace;">
-            </p>
+                            <div style="margin-top: 24px;">
+                                <button type="submit" name="upload_image" class="btn btn-orange">
+                                    Upload Gambar →
+                                </button>
+                            </div>
+                        </form>
+                        <?php endif; ?>
 
-            <?php if (!empty($logistics)): ?>
-                <h3>Select Logistics Courier</h3>
-                <table border="1" cellpadding="8" cellspacing="0">
-                    <thead>
-                        <tr>
-                            <th>Select</th>
-                            <th>Logistic ID</th>
-                            <th>Logistic Name</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($logistics as $logistic):
-                            $logistic_id = $logistic['logistics_channel_id'] ?? ($logistic['logistic_id'] ?? ($logistic['channel_id'] ?? 'N/A'));
-                            $logistic_name = $logistic['logistics_channel_name'] ?? ($logistic['logistic_name'] ?? ($logistic['name'] ?? '-'));
-                        ?>
-                            <tr>
-                                <td>
-                                    <input type="radio" name="logistic_radio" value="<?php echo htmlspecialchars($logistic_id); ?>"
-                                           onclick="document.getElementById('logistic_id_field').value = this.value;"
-                                           <?php echo ($selected_logistic == $logistic_id) ? 'checked' : ''; ?>>
-                                </td>
-                                <td><?php echo htmlspecialchars($logistic_id); ?></td>
-                                <td><?php echo htmlspecialchars($logistic_name); ?></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-                <br>
-                <p>
-                    <label>Logistic ID:</label><br>
-                    <input type="text" id="logistic_id_field" value="<?php echo htmlspecialchars($selected_logistic); ?>" readonly style="width: 400px; font-family: monospace;">
-                </p>
-            <?php endif; ?>
+                        <!-- Step 2: Select Category -->
+                        <?php if ($step === 2): ?>
+                        <form method="POST">
+                            <input type="hidden" name="image_id" value="<?php echo htmlspecialchars($image_id); ?>">
+                            <input type="hidden" name="id_app" value="<?php echo htmlspecialchars($_POST['id_app_hidden'] ?? ''); ?>">
 
-            <?php if (!empty($attributes) || $category_id): ?>
-                <h3>Product Information</h3>
-                <form method="POST">
-                    <input type="hidden" name="image_id" value="<?php echo htmlspecialchars($image_id); ?>" id="hidden_image_id">
-                    <input type="hidden" name="category_id" value="<?php echo htmlspecialchars($category_id); ?>">
-                    <input type="hidden" name="id_app" value="<?php echo htmlspecialchars($_POST['id_app'] ?? ($id_app ?? '')); ?>">
-                    <input type="hidden" name="logistic_id" id="hidden_logistic_id" value="<?php echo htmlspecialchars($selected_logistic); ?>">
+                            <div class="form-group">
+                                <label class="form-label">Image ID</label>
+                                <input type="text" value="<?php echo htmlspecialchars($image_id); ?>" class="form-input" readonly>
+                            </div>
 
-                    <p>
-                        <label>Item Name: *</label><br>
-                        <input type="text" name="item_name" required style="width: 400px;" value="<?php echo htmlspecialchars($form_data['item_name'] ?? ''); ?>">
-                    </p>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Pilih Kategori <span class="required">*</span>
+                                </label>
+                                <select name="category_id" class="form-select" required>
+                                    <option value="">-- Pilih Kategori --</option>
+                                    <?php foreach ($categories as $cat): ?>
+                                        <option value="<?php echo htmlspecialchars($cat['category_id']); ?>" <?php echo ($category_id == $cat['category_id']) ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($cat['display_category_name']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
 
-                    <p>
-                        <label>Original Price: *</label><br>
-                        <input type="number" name="original_price" required style="width: 400px;" placeholder="e.g. 350000" value="<?php echo htmlspecialchars($form_data['original_price'] ?? ''); ?>">
-                    </p>
+                            <div style="margin-top: 24px;">
+                                <button type="submit" name="select_category" class="btn btn-orange">
+                                    Pilih Kategori →
+                                </button>
+                            </div>
+                        </form>
+                        <?php endif; ?>
 
-                    <p>
-                        <label>Description: *</label><br>
-                        <textarea name="description" rows="5" required style="width: 400px;"><?php echo htmlspecialchars($form_data['description'] ?? ''); ?></textarea>
-                    </p>
+                        <!-- Step 3: Select Logistics -->
+                        <?php if ($step === 3): ?>
+                        <form method="POST">
+                            <input type="hidden" name="image_id" value="<?php echo htmlspecialchars($image_id); ?>">
+                            <input type="hidden" name="category_id" value="<?php echo htmlspecialchars($category_id); ?>">
+                            <input type="hidden" name="id_app" value="<?php echo htmlspecialchars($_POST['id_app'] ?? ''); ?>">
 
-                    <p>
-                        <label>Weight (kg): *</label><br>
-                        <input type="number" step="0.01" name="weight" required style="width: 400px;" placeholder="e.g. 0.3" value="<?php echo htmlspecialchars($form_data['weight'] ?? ''); ?>">
-                    </p>
+                            <div class="form-group">
+                                <label class="form-label">Image ID</label>
+                                <input type="text" value="<?php echo htmlspecialchars($image_id); ?>" class="form-input" readonly>
+                            </div>
 
-                    <p>
-                        <label>Item Status:</label><br>
-                        <select name="item_status" style="width: 400px;">
-                            <option value="NORMAL" <?php echo ($form_data['item_status'] ?? 'NORMAL') == 'NORMAL' ? 'selected' : ''; ?>>NORMAL</option>
-                            <option value="UNLIST" <?php echo ($form_data['item_status'] ?? '') == 'UNLIST' ? 'selected' : ''; ?>>UNLIST</option>
-                        </select>
-                    </p>
+                            <div class="form-group">
+                                <label class="form-label">Category ID</label>
+                                <input type="text" value="<?php echo htmlspecialchars($category_id); ?>" class="form-input" readonly>
+                            </div>
 
-                    <hr>
-
-                    <p>
-                        <label>Item SKU:</label><br>
-                        <input type="text" name="item_sku" style="width: 400px;" placeholder="e.g. JAM-PRIA-001" value="<?php echo htmlspecialchars($form_data['item_sku'] ?? ''); ?>">
-                    </p>
-
-                    <p>
-                        <label>Condition:</label><br>
-                        <select name="condition" style="width: 400px;">
-                            <option value="NEW" <?php echo ($form_data['condition'] ?? 'NEW') == 'NEW' ? 'selected' : ''; ?>>NEW</option>
-                            <option value="USED" <?php echo ($form_data['condition'] ?? '') == 'USED' ? 'selected' : ''; ?>>USED</option>
-                        </select>
-                    </p>
-
-                    <p>
-                        <label>Stock: *</label><br>
-                        <input type="number" name="stock" required style="width: 400px;" value="<?php echo htmlspecialchars($form_data['stock'] ?? '50'); ?>">
-                    </p>
-
-                    <hr>
-
-                    <h4>Wholesale (Optional)</h4>
-                    <p style="color: gray; font-size: 12px;">Note: Wholesale price must be between 50% - 99% of original price. Leave empty to disable wholesale.</p>
-                    <p>
-                        <label>Wholesale Min Count:</label><br>
-                        <input type="number" name="wholesale_min" style="width: 400px;" value="<?php echo htmlspecialchars($form_data['wholesale_min'] ?? '10'); ?>">
-                    </p>
-
-                    <p>
-                        <label>Wholesale Max Count:</label><br>
-                        <input type="number" name="wholesale_max" style="width: 400px;" value="<?php echo htmlspecialchars($form_data['wholesale_max'] ?? '10'); ?>">
-                    </p>
-
-                    <p>
-                        <label>Wholesale Unit Price:</label><br>
-                        <input type="number" name="wholesale_price" style="width: 400px;" placeholder="50%-99% of original price, e.g. 175000" value="<?php echo htmlspecialchars($form_data['wholesale_price'] ?? ''); ?>">
-                    </p>
-
-                    <hr>
-
-                    <h4>Package Dimensions</h4>
-                    <p>
-                        <label>Package Height (cm):</label><br>
-                        <input type="number" name="package_height" style="width: 400px;" value="<?php echo htmlspecialchars($form_data['package_height'] ?? '10'); ?>">
-                    </p>
-
-                    <p>
-                        <label>Package Length (cm):</label><br>
-                        <input type="number" name="package_length" style="width: 400px;" value="<?php echo htmlspecialchars($form_data['package_length'] ?? '15'); ?>">
-                    </p>
-
-                    <p>
-                        <label>Package Width (cm):</label><br>
-                        <input type="number" name="package_width" style="width: 400px;" value="<?php echo htmlspecialchars($form_data['package_width'] ?? '10'); ?>">
-                    </p>
-
-                    <?php if (!empty($debug_attr_error)): ?>
-                        <p style="color: red; font-weight: bold;">Error API Atribut: <?php echo htmlspecialchars($debug_attr_error); ?></p>
-                    <?php endif; ?>
-
-                    <?php if (!empty($attributes)): ?>
-                        <hr>
-                        <h4>Atribut Kategori</h4>
-                        <p style="color: gray; font-size: 12px;">Isi atribut yang ditandai bintang merah (*). Kosongkan yang tidak perlu.</p>
-                        
-                        <?php foreach ($attributes as $attr): ?>
-                            <?php 
-                            $is_req = ($attr['is_mandatory'] ?? false) ? true : false; 
-                            $display_name = $attr['display_attribute_name'] ?? $attr['name'] ?? 'Atribut';
-                            ?>
-                            <p>
-                                <label><?php echo htmlspecialchars($display_name); ?>: <?php echo $is_req ? '<span style="color:red">*</span>' : ''; ?></label><br>
-                                
-                                <?php if (!empty($attr['attribute_value_list'])): ?>
-                                    <select name="attributes[<?php echo $attr['attribute_id']; ?>]" <?php echo $is_req ? 'required' : ''; ?> style="width: 400px;">
-                                        <option value="">-- Pilih --</option>
-                                        <?php foreach ($attr['attribute_value_list'] as $val): ?>
-                                            <?php $vName = $val['display_value_name'] ?? $val['name'] ?? 'Opsi'; ?>
-                                            <option value="<?php echo $val['value_id'] . '|' . htmlspecialchars($vName); ?>"
-                                                <?php echo ($form_data['attributes'][$attr['attribute_id']] ?? '') == ($val['value_id'] . '|' . $vName) ? 'selected' : ''; ?>>
-                                                <?php echo htmlspecialchars($vName); ?>
-                                            </option>
+                            <?php if (!empty($logistics)): ?>
+                            <div class="form-section">
+                                <h3 class="form-section-title">Pilih Kurir Logistik</h3>
+                                <table class="logistic-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 50px;">Pilih</th>
+                                            <th>Logistic ID</th>
+                                            <th>Nama Kurir</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($logistics as $logistic):
+                                            $logistic_id = $logistic['logistics_channel_id'] ?? ($logistic['logistic_id'] ?? ($logistic['channel_id'] ?? 'N/A'));
+                                            $logistic_name = $logistic['logistics_channel_name'] ?? ($logistic['logistic_name'] ?? ($logistic['name'] ?? '-'));
+                                        ?>
+                                            <tr onclick="this.querySelector('input[type=radio]').checked = true; document.getElementById('hidden_logistic_id').value = '<?php echo htmlspecialchars($logistic_id); ?>';">
+                                                <td>
+                                                    <input type="radio" name="logistic_radio" value="<?php echo htmlspecialchars($logistic_id); ?>"
+                                                           onclick="document.getElementById('hidden_logistic_id').value = this.value;"
+                                                           <?php echo ($selected_logistic == $logistic_id) ? 'checked' : ''; ?>>
+                                                </td>
+                                                <td><?php echo htmlspecialchars($logistic_id); ?></td>
+                                                <td><?php echo htmlspecialchars($logistic_name); ?></td>
+                                            </tr>
                                         <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                                <input type="hidden" id="hidden_logistic_id" name="logistic_id" value="<?php echo htmlspecialchars($selected_logistic); ?>">
+                            </div>
+                            <?php endif; ?>
+
+                            <div style="margin-top: 24px;">
+                                <button type="submit" name="select_logistic" class="btn btn-orange">
+                                    Lanjut ke Detail Produk →
+                                </button>
+                            </div>
+                        </form>
+                        <?php endif; ?>
+
+                        <!-- Step 4: Product Details -->
+                        <?php if ($step === 4): ?>
+                        <form method="POST">
+                            <input type="hidden" name="image_id" value="<?php echo htmlspecialchars($image_id); ?>">
+                            <input type="hidden" name="category_id" value="<?php echo htmlspecialchars($category_id); ?>">
+                            <input type="hidden" name="id_app" value="<?php echo htmlspecialchars($_POST['id_app'] ?? ''); ?>">
+                            <input type="hidden" name="logistic_id" value="<?php echo htmlspecialchars($selected_logistic); ?>">
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Nama Produk <span class="required">*</span>
+                                </label>
+                                <input type="text" name="item_name" class="form-input" required value="<?php echo htmlspecialchars($form_data['item_name'] ?? ''); ?>" placeholder="Contoh: Laptop Gaming Pro 15">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Harga Asli (Rp) <span class="required">*</span>
+                                </label>
+                                <input type="number" name="original_price" class="form-input" required placeholder="Contoh: 350000" value="<?php echo htmlspecialchars($form_data['original_price'] ?? ''); ?>">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Deskripsi Produk <span class="required">*</span>
+                                </label>
+                                <textarea name="description" class="form-textarea" required placeholder="Jelaskan detail produk, spesifikasi, dan keunggulan..."><?php echo htmlspecialchars($form_data['description'] ?? ''); ?></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Berat (kg) <span class="required">*</span>
+                                </label>
+                                <input type="number" step="0.01" name="weight" class="form-input" required placeholder="Contoh: 0.3" value="<?php echo htmlspecialchars($form_data['weight'] ?? ''); ?>">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Status Produk</label>
+                                <select name="item_status" class="form-select">
+                                    <option value="NORMAL" <?php echo ($form_data['item_status'] ?? 'NORMAL') == 'NORMAL' ? 'selected' : ''; ?>>NORMAL (Aktif)</option>
+                                    <option value="UNLIST" <?php echo ($form_data['item_status'] ?? '') == 'UNLIST' ? 'selected' : ''; ?>>UNLIST (Tidak Aktif)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-section">
+                                <h3 class="form-section-title">Informasi Tambahan</h3>
+
+                                <div class="form-group">
+                                    <label class="form-label">SKU Produk</label>
+                                    <input type="text" name="item_sku" class="form-input" placeholder="Contoh: JAM-PRIA-001" value="<?php echo htmlspecialchars($form_data['item_sku'] ?? ''); ?>">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Kondisi Produk</label>
+                                    <select name="condition" class="form-select">
+                                        <option value="NEW" <?php echo ($form_data['condition'] ?? 'NEW') == 'NEW' ? 'selected' : ''; ?>>Baru (NEW)</option>
+                                        <option value="USED" <?php echo ($form_data['condition'] ?? '') == 'USED' ? 'selected' : ''; ?>>Bekas (USED)</option>
                                     </select>
-                                <?php else: ?>
-                                    <input type="text" name="attributes[<?php echo $attr['attribute_id']; ?>]" <?php echo $is_req ? 'required' : ''; ?> style="width: 400px;"
-                                           value="<?php echo htmlspecialchars($form_data['attributes'][$attr['attribute_id']] ?? ''); ?>"
-                                           placeholder="Isi nilai kustom...">
-                                <?php endif; ?>
-                            </p>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
+                                </div>
 
-                    <hr>
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        Stok <span class="required">*</span>
+                                    </label>
+                                    <input type="number" name="stock" class="form-input" required value="<?php echo htmlspecialchars($form_data['stock'] ?? '50'); ?>">
+                                </div>
+                            </div>
 
-                    <p>
-                        <button type="submit" name="create_product">Create Product</button>
-                    </p>
-                </form>
+                            <div class="form-section">
+                                <h3 class="form-section-title">Grosir (Opsional)</h3>
+                                <p class="form-help" style="margin-bottom: 16px;">Harga grosir harus antara 50% - 99% dari harga asli. Kosongkan untuk menonaktifkan grosir.</p>
+
+                                <div class="form-group">
+                                    <label class="form-label">Minimum Pembelian Grosir</label>
+                                    <input type="number" name="wholesale_min" class="form-input" value="<?php echo htmlspecialchars($form_data['wholesale_min'] ?? '10'); ?>">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Maksimum Pembelian Grosir</label>
+                                    <input type="number" name="wholesale_max" class="form-input" value="<?php echo htmlspecialchars($form_data['wholesale_max'] ?? '10'); ?>">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Harga Grosir per Unit</label>
+                                    <input type="number" name="wholesale_price" class="form-input" placeholder="Contoh: 175000" value="<?php echo htmlspecialchars($form_data['wholesale_price'] ?? ''); ?>">
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h3 class="form-section-title">Dimensi Paket</h3>
+
+                                <div class="form-group">
+                                    <label class="form-label">Tinggi Paket (cm)</label>
+                                    <input type="number" name="package_height" class="form-input" value="<?php echo htmlspecialchars($form_data['package_height'] ?? '10'); ?>">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Panjang Paket (cm)</label>
+                                    <input type="number" name="package_length" class="form-input" value="<?php echo htmlspecialchars($form_data['package_length'] ?? '15'); ?>">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Lebar Paket (cm)</label>
+                                    <input type="number" name="package_width" class="form-input" value="<?php echo htmlspecialchars($form_data['package_width'] ?? '10'); ?>">
+                                </div>
+                            </div>
+
+                            <?php if (!empty($attributes)): ?>
+                            <div class="form-section">
+                                <h3 class="form-section-title">Atribut Kategori</h3>
+                                <p class="form-help" style="margin-bottom: 16px;">Isi atribut yang ditandai bintang merah (*). Kosongkan yang tidak perlu.</p>
+
+                                <?php foreach ($attributes as $attr): ?>
+                                    <?php
+                                    $is_req = ($attr['is_mandatory'] ?? false) ? true : false;
+                                    $display_name = $attr['display_attribute_name'] ?? $attr['name'] ?? 'Atribut';
+                                    ?>
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <?php echo htmlspecialchars($display_name); ?>
+                                            <?php echo $is_req ? '<span class="required">*</span>' : ''; ?>
+                                        </label>
+
+                                        <?php if (!empty($attr['attribute_value_list'])): ?>
+                                            <select name="attributes[<?php echo $attr['attribute_id']; ?>]" class="form-select" <?php echo $is_req ? 'required' : ''; ?>>
+                                                <option value="">-- Pilih --</option>
+                                                <?php foreach ($attr['attribute_value_list'] as $val): ?>
+                                                    <?php $vName = $val['display_value_name'] ?? $val['name'] ?? 'Opsi'; ?>
+                                                    <option value="<?php echo $val['value_id'] . '|' . htmlspecialchars($vName); ?>"
+                                                        <?php echo ($form_data['attributes'][$attr['attribute_id']] ?? '') == ($val['value_id'] . '|' . $vName) ? 'selected' : ''; ?>>
+                                                        <?php echo htmlspecialchars($vName); ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        <?php else: ?>
+                                            <input type="text" name="attributes[<?php echo $attr['attribute_id']; ?>]" class="form-input" <?php echo $is_req ? 'required' : ''; ?>
+                                                   value="<?php echo htmlspecialchars($form_data['attributes'][$attr['attribute_id']] ?? ''); ?>"
+                                                   placeholder="Masukkan <?php echo htmlspecialchars($display_name); ?>">
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                            <?php endif; ?>
+
+                            <div style="margin-top: 32px; display: flex; gap: 12px;">
+                                <button type="submit" name="create_product" class="btn btn-orange" style="flex: 1;">
+                                    ✓ Buat Produk
+                                </button>
+                            </div>
+                        </form>
+                        <?php endif; ?>
+
+                    </div>
+                </div>
             <?php endif; ?>
-        <?php endif; ?>
-    <?php endif; ?>
-
-    <?php if ($product_result): ?>
-        <h3>Product Creation Result</h3>
-        <textarea rows="15" cols="80" readonly style="width: 100%; font-family: monospace;"><?php echo htmlspecialchars($product_result); ?></textarea>
-    <?php endif; ?>
+        </div>
+    </main>
 
     <script>
-        document.querySelectorAll('input[name="logistic_radio"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                document.getElementById('logistic_id_field').value = this.value;
-                const hiddenLogistic = document.getElementById('hidden_logistic_id');
-                if (hiddenLogistic) {
-                    hiddenLogistic.value = this.value;
-                }
+        // Auto-select logistic when clicking row
+        document.addEventListener('DOMContentLoaded', function() {
+            const logisticRows = document.querySelectorAll('.logistic-table tbody tr');
+            logisticRows.forEach(row => {
+                row.addEventListener('click', function() {
+                    const radio = this.querySelector('input[type="radio"]');
+                    radio.checked = true;
+                    const logisticId = radio.value;
+                    document.getElementById('hidden_logistic_id').value = logisticId;
+                });
             });
         });
-        const checkedRadio = document.querySelector('input[name="logistic_radio"]:checked');
-        if (checkedRadio) {
-            const hiddenLogistic = document.getElementById('hidden_logistic_id');
-            if (hiddenLogistic) {
-                hiddenLogistic.value = checkedRadio.value;
-            }
-        }
-        const imageIdDisplay = document.getElementById('image_id_display');
-        const hiddenImage = document.getElementById('hidden_image_id');
-        if (imageIdDisplay && hiddenImage) {
-            hiddenImage.value = imageIdDisplay.value;
-        }
     </script>
 </body>
 </html>
