@@ -2,7 +2,6 @@
 session_start();
 require_once __DIR__ . '/../config/koneksi.php';
 
-// Fetch list of apps for dropdown
 $query = "SELECT id_app, nama_app FROM app ORDER BY nama_app";
 $result = $conn->query($query);
 $apps = [];
@@ -16,8 +15,10 @@ $logistics = [];
 $selected_logistic = "";
 $error_message = "";
 $product_result = "";
+$attributes = [];
+$form_data = [];
+$debug_attr_error = "";
 
-// Fetch categories for dropdown
 $categories_query = "SELECT category_id, display_category_name FROM category_api ORDER BY display_category_name ASC";
 $categories_result = $conn->query($categories_query);
 $categories = [];
@@ -35,11 +36,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
     } else {
         $image_file = $_FILES['image'];
 
-        // Validate file size (max 1MB)
         if ($image_file['size'] > 1048576) {
             $error_message = "File size exceeds 1MB limit";
         } else {
-            // Validate file type (JPG only)
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
             $mime_type = finfo_file($finfo, $image_file['tmp_name']);
             finfo_close($finfo);
@@ -47,7 +46,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
             if (!in_array($mime_type, ['image/jpeg', 'image/jpg'])) {
                 $error_message = "Only JPG files are allowed";
             } else {
-                // Fetch app credentials from database
                 $query = "SELECT partner_id, partner_key, shop_id FROM app WHERE id_app = ?";
                 $stmt = $conn->prepare($query);
                 $stmt->bind_param("i", $id_app);
@@ -60,19 +58,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
                     $partnerId = $row['partner_id'];
                     $partnerKey = $row['partner_key'];
 
-                    // Generate signature
                     $apiPath = "/api/v2/media_space/upload_image";
                     $timestamp = (string)time();
                     $baseString = $partnerId . $apiPath . $timestamp;
                     $sign = hash_hmac('sha256', $baseString, $partnerKey);
 
-                    // Build API URL
                     $baseUrl = "https://openplatform.sandbox.test-stable.shopee.sg";
                     $finalUrl = sprintf("%s%s?partner_id=%s&timestamp=%s&sign=%s",
                         $baseUrl, $apiPath, $partnerId, $timestamp, $sign
                     );
 
-                    // Call Shopee API
                     $cFile = new CURLFILE($image_file['tmp_name'], 'image/jpeg', $image_file['name']);
                     $postData = array('image' => $cFile);
 
@@ -92,7 +87,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
                         $error_message = "cURL Error: " . $curl_error;
                     } else {
                         $response_data = json_decode($response, true);
-
                         if (isset($response_data['response']['image_info']['image_id'])) {
                             $image_id = $response_data['response']['image_info']['image_id'];
                         } else {
@@ -100,7 +94,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
                         }
                     }
                 }
-
                 $stmt->close();
             }
         }
@@ -110,9 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
     $category_id = $_POST['category_id'] ?? '';
     $id_app = $_POST['id_app'] ?? '';
 
-    // Fetch logistics from Shopee API
     if ($id_app) {
-        // Fetch credentials
         $query = "SELECT a.partner_id, a.partner_key, a.shop_id, t.access_token
                   FROM app a
                   LEFT JOIN token t ON a.id_app = t.id_app
@@ -131,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
             $accessToken = $row['access_token'];
 
             if ($accessToken) {
-                // Call logistics API
+                // --- GET LOGISTICS ---
                 $apiPath = "/api/v2/logistics/get_channel_list";
                 $timestamp = (string)time();
                 $baseString = $partnerId . $apiPath . $timestamp . $accessToken . $shopId;
@@ -145,7 +136,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
                 $ch = curl_init();
                 curl_setopt($ch, CURLOPT_URL, $finalUrl);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
                 $response = curl_exec($ch);
                 $curl_error = curl_error($ch);
                 curl_close($ch);
@@ -154,47 +144,101 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
                     $error_message = "cURL Error: " . $curl_error;
                 } else {
                     $response_data = json_decode($response, true);
-                    
-                    // Debug: show raw response if needed
-                    if (isset($_GET['debug'])) {
-                        echo "<pre>Debug - API Response:\n";
-                        print_r($response_data);
-                        echo "</pre>";
-                    }
-                    
-                    // Try different response structures
                     if (isset($response_data['response']['logistics_channel_list'])) {
                         $logistics = $response_data['response']['logistics_channel_list'];
                     } elseif (isset($response_data['response']['logistics'])) {
                         $logistics = $response_data['response']['logistics'];
                     } elseif (isset($response_data['response'])) {
-                        // Some APIs return logistics directly under response
                         $logistics = $response_data['response'];
                     } elseif (isset($response_data['logistics'])) {
                         $logistics = $response_data['logistics'];
-                    } elseif (isset($response_data['channel_list'])) {
-                        $logistics = $response_data['channel_list'];
                     }
 
-                    // If logistics is empty and debug mode, show raw response
-                    if (empty($logistics) && isset($response_data)) {
-                        $logistics = [];
-                        // Try to find array in response
-                        foreach ($response_data as $key => $value) {
-                            if (is_array($value) && isset($value[0])) {
-                                $logistics = $value;
-                                break;
-                            }
-                            if (is_array($value)) {
-                                foreach ($value as $sub_key => $sub_value) {
-                                    if (is_array($sub_value) && isset($sub_value[0])) {
-                                        $logistics = $sub_value;
-                                        break 2;
+                    // --- GET ATTRIBUTE TREE ---
+                    $apiPathAttr = "/api/v2/product/get_attribute_tree"; 
+                    $timestampAttr = (string)time();
+                    $baseStringAttr = $partnerId . $apiPathAttr . $timestampAttr . $accessToken . $shopId;
+                    $signAttr = hash_hmac('sha256', $baseStringAttr, $partnerKey);
+
+                    $finalUrlAttr = sprintf("%s%s?partner_id=%s&timestamp=%s&access_token=%s&shop_id=%s&sign=%s&language=id&category_id_list=%s",
+                        $baseUrl, $apiPathAttr, $partnerId, $timestampAttr, $accessToken, $shopId, $signAttr, $category_id
+                    );
+
+                    $chAttr = curl_init();
+                    curl_setopt($chAttr, CURLOPT_URL, $finalUrlAttr);
+                    curl_setopt($chAttr, CURLOPT_RETURNTRANSFER, true);
+                    $responseAttr = curl_exec($chAttr);
+                    curl_close($chAttr);
+
+                    // DATA CADANGAN (FALLBACK) UNTUK SANDBOX YANG CACAT
+                    $sandbox_fallback_data = [
+                        '301942' => [ // ID Kategori Laptop
+                            200388 => [ // Tipe Laptop
+                                ['value_id' => 11032792, 'display_value_name' => 'Thin and Light'],
+                                ['value_id' => 11032793, 'display_value_name' => 'Gaming'],
+                                ['value_id' => 11032794, 'display_value_name' => '2 in 1']
+                            ],
+                            200370 => [ // Jenis Garansi
+                                ['value_id' => 10921, 'display_value_name' => 'Garansi Resmi'],
+                                ['value_id' => 10922, 'display_value_name' => 'Garansi Distributor']
+                            ]
+                        ]
+                    ];
+
+                    if ($responseAttr) {
+                        $attr_data = json_decode($responseAttr, true);
+                        if (isset($attr_data['error']) && $attr_data['error'] !== "") {
+                            $debug_attr_error = $attr_data['message'];
+                        } elseif (isset($attr_data['response']['list'][0]['attribute_tree'])) {
+                            foreach ($attr_data['response']['list'][0]['attribute_tree'] as $attr) {
+                                
+                                // Ambil nama atribut (utamakan bahasa Indonesia)
+                                $display_name = $attr['name'];
+                                if (isset($attr['multi_lang'][0]['value'])) {
+                                    $display_name = $attr['multi_lang'][0]['value'];
+                                }
+                                $attr['display_attribute_name'] = $display_name;
+                                $attr['is_mandatory'] = $attr['mandatory'] ?? false;
+
+                                // PROSES NILAI (DROPDOWN)
+                                $processed_values = [];
+                                
+                                // 1. Coba ambil dari API dulu
+                                if (isset($attr['attribute_value_list']) && is_array($attr['attribute_value_list'])) {
+                                    foreach ($attr['attribute_value_list'] as $val) {
+                                        $val_name = $val['name'];
+                                        if (isset($val['multi_lang'][0]['value'])) {
+                                            $val_name = $val['multi_lang'][0]['value'];
+                                        }
+                                        $processed_values[] = [
+                                            'value_id' => $val['value_id'],
+                                            'display_value_name' => $val_name
+                                        ];
                                     }
                                 }
+
+                                // 2. Jika dari API kosong (cacat), coba cek data cadangan kita
+                                if (empty($processed_values) && isset($sandbox_fallback_data[$category_id][$attr['attribute_id']])) {
+                                    $processed_values = $sandbox_fallback_data[$category_id][$attr['attribute_id']];
+                                }
+
+                                // Simpan kembali nilai yang sudah diproses ke array utama
+                                $attr['attribute_value_list'] = $processed_values;
+                                $attributes[] = $attr;
                             }
                         }
+                    } else {
+                        $debug_attr_error = "Tidak ada respons dari API Atribut Shopee.";
                     }
+                    // --------------------------------------
+
+                    $form_data = [
+                        'item_name' => '', 'original_price' => '', 'description' => '',
+                        'weight' => '', 'item_status' => 'NORMAL', 'item_sku' => '',
+                        'condition' => 'NEW', 'stock' => '50', 'wholesale_min' => '10',
+                        'wholesale_max' => '10', 'wholesale_price' => '', 'package_height' => '10',
+                        'package_length' => '15', 'package_width' => '10', 'attributes' => []
+                    ];
                 }
             } else {
                 $error_message = "No access token for this app (ID: $id_app)";
@@ -211,7 +255,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
     $category_id = $_POST['category_id'] ?? '';
     $selected_logistic = $_POST['logistic_id'] ?? '';
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_product'])) {
-    // Collect all product data
+    
     $product_data = [
         'id_app' => $_POST['id_app'] ?? '',
         'item_name' => $_POST['item_name'] ?? '',
@@ -230,10 +274,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
         'package_width' => $_POST['package_width'] ?? 10,
         'logistic_id' => $_POST['logistic_id'] ?? 81017,
         'image_id' => $_POST['image_id'] ?? '',
-        'category_id' => $_POST['category_id'] ?? 301034
+        'category_id' => $_POST['category_id'] ?? 301034,
+        'attributes' => $_POST['attributes'] ?? []
     ];
 
-    // Call creating product API
     if ($product_data['id_app']) {
         $ch = curl_init();
         $api_url = "http://" . $_SERVER['HTTP_HOST'] . "/shopee/shopee_api/5th_creatingproduct.php?id_app=" . $product_data['id_app'];
@@ -241,6 +285,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
         curl_setopt($ch, CURLOPT_URL, $api_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
+        // Membungkus payload post dengan http_build_query
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($product_data));
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded']);
 
@@ -251,8 +296,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
         if ($curl_error) {
             $error_message = "cURL Error: " . $curl_error;
         } else {
-            $create_response = json_decode($response, true);
-            $product_result = $response; // Store for display
+            $product_result = $response;
         }
     }
 }
@@ -353,59 +397,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
                     <label>Logistic ID:</label><br>
                     <input type="text" id="logistic_id_field" value="<?php echo htmlspecialchars($selected_logistic); ?>" readonly style="width: 400px; font-family: monospace;">
                 </p>
+            <?php endif; ?>
 
-                <script>
-                    // Sync radio button selection to hidden logistic_id field in product form
-                    document.querySelectorAll('input[name="logistic_radio"]').forEach(radio => {
-                        radio.addEventListener('change', function() {
-                            document.getElementById('logistic_id_field').value = this.value;
-                            document.getElementById('hidden_logistic_id').value = this.value;
-                        });
-                    });
-                    // Set initial value if radio is pre-checked
-                    const checkedRadio = document.querySelector('input[name="logistic_radio"]:checked');
-                    if (checkedRadio) {
-                        document.getElementById('hidden_logistic_id').value = checkedRadio.value;
-                    }
-                    // Sync image_id from readonly field to hidden field
-                    const imageIdDisplay = document.getElementById('image_id_display');
-                    if (imageIdDisplay) {
-                        document.getElementById('hidden_image_id').value = imageIdDisplay.value;
-                    }
-                </script>
-
+            <?php if (!empty($attributes) || $category_id): ?>
                 <h3>Product Information</h3>
                 <form method="POST">
                     <input type="hidden" name="image_id" value="<?php echo htmlspecialchars($image_id); ?>" id="hidden_image_id">
                     <input type="hidden" name="category_id" value="<?php echo htmlspecialchars($category_id); ?>">
-                    <input type="hidden" name="id_app" value="<?php echo htmlspecialchars($_POST['id_app'] ?? ''); ?>">
+                    <input type="hidden" name="id_app" value="<?php echo htmlspecialchars($_POST['id_app'] ?? ($id_app ?? '')); ?>">
                     <input type="hidden" name="logistic_id" id="hidden_logistic_id" value="<?php echo htmlspecialchars($selected_logistic); ?>">
 
                     <p>
                         <label>Item Name: *</label><br>
-                        <input type="text" name="item_name" required style="width: 400px;">
+                        <input type="text" name="item_name" required style="width: 400px;" value="<?php echo htmlspecialchars($form_data['item_name'] ?? ''); ?>">
                     </p>
 
                     <p>
                         <label>Original Price: *</label><br>
-                        <input type="number" name="original_price" required style="width: 400px;" placeholder="e.g. 350000">
+                        <input type="number" name="original_price" required style="width: 400px;" placeholder="e.g. 350000" value="<?php echo htmlspecialchars($form_data['original_price'] ?? ''); ?>">
                     </p>
 
                     <p>
                         <label>Description: *</label><br>
-                        <textarea name="description" rows="5" required style="width: 400px;"></textarea>
+                        <textarea name="description" rows="5" required style="width: 400px;"><?php echo htmlspecialchars($form_data['description'] ?? ''); ?></textarea>
                     </p>
 
                     <p>
                         <label>Weight (kg): *</label><br>
-                        <input type="number" step="0.01" name="weight" required style="width: 400px;" placeholder="e.g. 0.3">
+                        <input type="number" step="0.01" name="weight" required style="width: 400px;" placeholder="e.g. 0.3" value="<?php echo htmlspecialchars($form_data['weight'] ?? ''); ?>">
                     </p>
 
                     <p>
                         <label>Item Status:</label><br>
                         <select name="item_status" style="width: 400px;">
-                            <option value="NORMAL">NORMAL</option>
-                            <option value="UNLIST">UNLIST</option>
+                            <option value="NORMAL" <?php echo ($form_data['item_status'] ?? 'NORMAL') == 'NORMAL' ? 'selected' : ''; ?>>NORMAL</option>
+                            <option value="UNLIST" <?php echo ($form_data['item_status'] ?? '') == 'UNLIST' ? 'selected' : ''; ?>>UNLIST</option>
                         </select>
                     </p>
 
@@ -413,20 +439,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
 
                     <p>
                         <label>Item SKU:</label><br>
-                        <input type="text" name="item_sku" style="width: 400px;" placeholder="e.g. JAM-PRIA-001">
+                        <input type="text" name="item_sku" style="width: 400px;" placeholder="e.g. JAM-PRIA-001" value="<?php echo htmlspecialchars($form_data['item_sku'] ?? ''); ?>">
                     </p>
 
                     <p>
                         <label>Condition:</label><br>
                         <select name="condition" style="width: 400px;">
-                            <option value="NEW">NEW</option>
-                            <option value="USED">USED</option>
+                            <option value="NEW" <?php echo ($form_data['condition'] ?? 'NEW') == 'NEW' ? 'selected' : ''; ?>>NEW</option>
+                            <option value="USED" <?php echo ($form_data['condition'] ?? '') == 'USED' ? 'selected' : ''; ?>>USED</option>
                         </select>
                     </p>
 
                     <p>
                         <label>Stock: *</label><br>
-                        <input type="number" name="stock" required style="width: 400px;" value="50">
+                        <input type="number" name="stock" required style="width: 400px;" value="<?php echo htmlspecialchars($form_data['stock'] ?? '50'); ?>">
                     </p>
 
                     <hr>
@@ -435,17 +461,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
                     <p style="color: gray; font-size: 12px;">Note: Wholesale price must be between 50% - 99% of original price. Leave empty to disable wholesale.</p>
                     <p>
                         <label>Wholesale Min Count:</label><br>
-                        <input type="number" name="wholesale_min" style="width: 400px;" value="10">
+                        <input type="number" name="wholesale_min" style="width: 400px;" value="<?php echo htmlspecialchars($form_data['wholesale_min'] ?? '10'); ?>">
                     </p>
 
                     <p>
                         <label>Wholesale Max Count:</label><br>
-                        <input type="number" name="wholesale_max" style="width: 400px;" value="10">
+                        <input type="number" name="wholesale_max" style="width: 400px;" value="<?php echo htmlspecialchars($form_data['wholesale_max'] ?? '10'); ?>">
                     </p>
 
                     <p>
                         <label>Wholesale Unit Price:</label><br>
-                        <input type="number" name="wholesale_price" style="width: 400px;" placeholder="50%-99% of original price, e.g. 175000">
+                        <input type="number" name="wholesale_price" style="width: 400px;" placeholder="50%-99% of original price, e.g. 175000" value="<?php echo htmlspecialchars($form_data['wholesale_price'] ?? ''); ?>">
                     </p>
 
                     <hr>
@@ -453,18 +479,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
                     <h4>Package Dimensions</h4>
                     <p>
                         <label>Package Height (cm):</label><br>
-                        <input type="number" name="package_height" style="width: 400px;" value="10">
+                        <input type="number" name="package_height" style="width: 400px;" value="<?php echo htmlspecialchars($form_data['package_height'] ?? '10'); ?>">
                     </p>
 
                     <p>
                         <label>Package Length (cm):</label><br>
-                        <input type="number" name="package_length" style="width: 400px;" value="15">
+                        <input type="number" name="package_length" style="width: 400px;" value="<?php echo htmlspecialchars($form_data['package_length'] ?? '15'); ?>">
                     </p>
 
                     <p>
                         <label>Package Width (cm):</label><br>
-                        <input type="number" name="package_width" style="width: 400px;" value="10">
+                        <input type="number" name="package_width" style="width: 400px;" value="<?php echo htmlspecialchars($form_data['package_width'] ?? '10'); ?>">
                     </p>
+
+                    <?php if (!empty($debug_attr_error)): ?>
+                        <p style="color: red; font-weight: bold;">Error API Atribut: <?php echo htmlspecialchars($debug_attr_error); ?></p>
+                    <?php endif; ?>
+
+                    <?php if (!empty($attributes)): ?>
+                        <hr>
+                        <h4>Atribut Kategori</h4>
+                        <p style="color: gray; font-size: 12px;">Isi atribut yang ditandai bintang merah (*). Kosongkan yang tidak perlu.</p>
+                        
+                        <?php foreach ($attributes as $attr): ?>
+                            <?php 
+                            $is_req = ($attr['is_mandatory'] ?? false) ? true : false; 
+                            $display_name = $attr['display_attribute_name'] ?? $attr['name'] ?? 'Atribut';
+                            ?>
+                            <p>
+                                <label><?php echo htmlspecialchars($display_name); ?>: <?php echo $is_req ? '<span style="color:red">*</span>' : ''; ?></label><br>
+                                
+                                <?php if (!empty($attr['attribute_value_list'])): ?>
+                                    <select name="attributes[<?php echo $attr['attribute_id']; ?>]" <?php echo $is_req ? 'required' : ''; ?> style="width: 400px;">
+                                        <option value="">-- Pilih --</option>
+                                        <?php foreach ($attr['attribute_value_list'] as $val): ?>
+                                            <?php $vName = $val['display_value_name'] ?? $val['name'] ?? 'Opsi'; ?>
+                                            <option value="<?php echo $val['value_id'] . '|' . htmlspecialchars($vName); ?>"
+                                                <?php echo ($form_data['attributes'][$attr['attribute_id']] ?? '') == ($val['value_id'] . '|' . $vName) ? 'selected' : ''; ?>>
+                                                <?php echo htmlspecialchars($vName); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                <?php else: ?>
+                                    <input type="text" name="attributes[<?php echo $attr['attribute_id']; ?>]" <?php echo $is_req ? 'required' : ''; ?> style="width: 400px;"
+                                           value="<?php echo htmlspecialchars($form_data['attributes'][$attr['attribute_id']] ?? ''); ?>"
+                                           placeholder="Isi nilai kustom...">
+                                <?php endif; ?>
+                            </p>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
 
                     <hr>
 
@@ -472,20 +535,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
                         <button type="submit" name="create_product">Create Product</button>
                     </p>
                 </form>
-
-            <?php elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['select_category'])): ?>
-                <p style="color: orange;">
-                    No logistics available.
-                    <a href="?debug=1&id_app=<?php echo htmlspecialchars($_POST['id_app']); ?>">Click here for debug info</a>
-                    <?php if (isset($_GET['debug'])): ?>
-                        <br><br>
-                        <strong>Debug Info:</strong><br>
-                        id_app = <?php echo htmlspecialchars($id_app); ?><br>
-                        accessToken = <?php echo $accessToken ? 'YES' : 'NO'; ?><br>
-                        API Response count = <?php echo isset($response_data) ? count($response_data) : 'N/A'; ?><br>
-                        <pre><?php echo isset($response_data) ? htmlspecialchars(print_r($response_data, true)) : ''; ?></pre>
-                    <?php endif; ?>
-                </p>
             <?php endif; ?>
         <?php endif; ?>
     <?php endif; ?>
@@ -494,5 +543,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
         <h3>Product Creation Result</h3>
         <textarea rows="15" cols="80" readonly style="width: 100%; font-family: monospace;"><?php echo htmlspecialchars($product_result); ?></textarea>
     <?php endif; ?>
+
+    <script>
+        document.querySelectorAll('input[name="logistic_radio"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.getElementById('logistic_id_field').value = this.value;
+                const hiddenLogistic = document.getElementById('hidden_logistic_id');
+                if (hiddenLogistic) {
+                    hiddenLogistic.value = this.value;
+                }
+            });
+        });
+        const checkedRadio = document.querySelector('input[name="logistic_radio"]:checked');
+        if (checkedRadio) {
+            const hiddenLogistic = document.getElementById('hidden_logistic_id');
+            if (hiddenLogistic) {
+                hiddenLogistic.value = checkedRadio.value;
+            }
+        }
+        const imageIdDisplay = document.getElementById('image_id_display');
+        const hiddenImage = document.getElementById('hidden_image_id');
+        if (imageIdDisplay && hiddenImage) {
+            hiddenImage.value = imageIdDisplay.value;
+        }
+    </script>
 </body>
 </html>

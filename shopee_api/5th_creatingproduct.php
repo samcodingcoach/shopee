@@ -1,19 +1,18 @@
 <?php
+// Tahan output agar tidak ada spasi bocor yang merusak format JSON
+ob_start();
+header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../config/koneksi.php';
 
-// Get id_app from GET parameter
 $id_app = $_GET['id_app'] ?? null;
 
 if (!$id_app) {
-    echo json_encode([
-        "success" => false,
-        "message" => "Parameter id_app is required"
-    ]);
+    ob_clean();
+    echo json_encode(["success" => false, "message" => "Parameter id_app is required"]);
     exit;
 }
 
-// Fetch app credentials and token from database
 $query = "SELECT a.partner_id, a.partner_key, a.shop_id, t.access_token 
           FROM app a
           LEFT JOIN token t ON a.id_app = t.id_app
@@ -26,10 +25,8 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if (!$row = $result->fetch_assoc()) {
-    echo json_encode([
-        "success" => false,
-        "message" => "App not found with id_app: " . $id_app
-    ]);
+    ob_clean();
+    echo json_encode(["success" => false, "message" => "App not found with id_app: " . $id_app]);
     exit;
 }
 
@@ -37,59 +34,70 @@ $partnerId = $row['partner_id'];
 $partnerKey = $row['partner_key'];
 $shopId = $row['shop_id'];
 $accessToken = $row['access_token'];
+$stmt->close();
 
 if (!$accessToken) {
-    echo json_encode([
-        "success" => false,
-        "message" => "No access token found for this app. Please authorize first."
-    ]);
+    ob_clean();
+    echo json_encode(["success" => false, "message" => "No access token found for this app. Please authorize first."]);
     exit;
 }
 
-$stmt->close();
-
-// Endpoint Add Item
 $apiPath = "/api/v2/product/add_item";
 $timestamp = (string)time();
-
-// Generate Signature
 $baseString = $partnerId . $apiPath . $timestamp . $accessToken . $shopId;
 $sign = hash_hmac('sha256', $baseString, $partnerKey);
 
-// URL Sandbox
 $baseUrl = "https://openplatform.sandbox.test-stable.shopee.sg";
 $finalUrl = sprintf("%s%s?partner_id=%s&timestamp=%s&access_token=%s&shop_id=%s&sign=%s",
     $baseUrl, $apiPath, $partnerId, $timestamp, $accessToken, $shopId, $sign
 );
 
-// RAKIT PAYLOAD PRODUK (JSON)
+// --- RAKIT ATRIBUT DINAMIS ---
+$attribute_list = [];
+if (isset($_POST['attributes']) && is_array($_POST['attributes'])) {
+    foreach ($_POST['attributes'] as $attr_id => $attr_raw) {
+        if (trim($attr_raw) === '') {
+            continue; // Abaikan atribut kosong
+        }
+
+        $val_id = 0;
+        $val_name = $attr_raw;
+
+        if (strpos($attr_raw, '|') !== false) {
+            $parts = explode('|', $attr_raw, 2);
+            $val_id = (int)$parts[0];
+            $val_name = $parts[1];
+        }
+
+        $attr_entry = [
+            "attribute_id" => (int)$attr_id,
+            "attribute_value_list" => [
+                ["value_id" => $val_id]
+            ]
+        ];
+
+        if ($val_id === 0) {
+            $attr_entry["attribute_value_list"][0]["original_value_name"] = $val_name;
+        }
+
+        $attribute_list[] = $attr_entry;
+    }
+}
+
+// --- RAKIT PAYLOAD PRODUK ---
 $productData = [
     "original_price" => isset($_POST['original_price']) ? (int)$_POST['original_price'] : 350000,
-    "description" => $_POST['description'] ?? "Jam tangan pria elegan, anti air hingga 30 meter. Cocok untuk acara formal maupun kasual.",
+    "description" => $_POST['description'] ?? "Deskripsi produk.",
     "weight" => isset($_POST['weight']) ? (float)$_POST['weight'] : 0.3,
-    "item_name" => $_POST['item_name'] ?? "Jam Tangan Pria Anti Air Premium",
+    "item_name" => $_POST['item_name'] ?? "Produk Baru",
     "item_status" => $_POST['item_status'] ?? "NORMAL",
     "item_sku" => $_POST['item_sku'] ?? "",
     "condition" => $_POST['condition'] ?? "NEW",
     "seller_stock" => [
-        [
-            "stock" => isset($_POST['stock']) ? (int)$_POST['stock'] : 50
-        ]
+        ["stock" => isset($_POST['stock']) ? (int)$_POST['stock'] : 50]
     ],
     "category_id" => isset($_POST['category_id']) ? (int)$_POST['category_id'] : 301034,
-    
-    // Mandatory attributes based on selected category
-    "attribute_list" => isset($_POST['attribute_list']) ? json_decode($_POST['attribute_list'], true) : [
-        [
-            "attribute_id" => 200218, // Bag Size - from error message
-            "attribute_value_list" => [
-                [
-                    "value_id" => 0, // 0 for custom/free text input
-                    "original_value_name" => "Lainnya"
-                ]
-            ]
-        ]
-    ],
+    "attribute_list" => $attribute_list,
     "brand" => [
         "brand_id" => 0,
         "original_brand_name" => "No Brand"
@@ -112,7 +120,6 @@ $productData = [
     ]
 ];
 
-// Add wholesale only if valid (50%-99% of original price)
 $original_price = isset($_POST['original_price']) ? (int)$_POST['original_price'] : 0;
 $wholesale_price = isset($_POST['wholesale_price']) ? (int)$_POST['wholesale_price'] : 0;
 
@@ -131,7 +138,7 @@ if ($wholesale_price > 0 && $original_price > 0) {
 
 $jsonBody = json_encode($productData);
 
-// Eksekusi POST via cURL
+// Eksekusi POST
 $ch = curl_init($finalUrl);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POST, true);
@@ -142,15 +149,15 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, [
 
 $response = curl_exec($ch);
 
+ob_clean(); // Bersihkan sebelum output akhir
+
 if(curl_errno($ch)){
-    echo json_encode([
-        "success" => false,
-        "message" => "cURL Error: " . curl_error($ch)
-    ], JSON_PRETTY_PRINT);
+    echo json_encode(["success" => false, "message" => "cURL Error: " . curl_error($ch)]);
 } else {
-    echo json_encode(json_decode($response), JSON_PRETTY_PRINT);
+    // Hilangkan karakter kontrol cacat Sandbox jika ada
+    $clean_response = preg_replace('/[\x00-\x1F]/', ' ', $response);
+    echo json_encode(json_decode($clean_response));
 }
 
 curl_close($ch);
-
 ?>
