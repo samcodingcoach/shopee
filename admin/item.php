@@ -204,11 +204,11 @@
                             <input id="searchInput" class="w-full bg-white border border-outline-variant/20 rounded-md pl-10 pr-4 py-2 text-sm focus:ring-1 focus:ring-primary focus:border-primary" placeholder="Search product name, SKU..." type="text" onkeyup="filterItems()" />
                         </div>
                         <div class="flex items-center gap-4">
-                            <select id="statusFilter" class="bg-white border border-outline-variant/20 rounded-md px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-primary" onchange="filterItems()">
+                            <select id="statusFilter" class="bg-white border border-outline-variant/20 rounded-md pr-8 pl-3 py-2 text-xs font-medium focus:ring-1 focus:ring-primary w-auto min-w-[140px]" onchange="filterItems()">
                                 <option value="">Status: All</option>
-                                <option value="NORMAL">Active</option>
-                                <option value="UNLIST">Unlist</option>
-                                <option value="BANNED">Banned</option>
+                                <option value="NORMAL">NORMAL</option>
+                                <option value="UNLIST">UNLIST</option>
+                                <option value="BANNED">BANNED</option>
                             </select>
                         </div>
                     </div>
