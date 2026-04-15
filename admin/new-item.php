@@ -480,11 +480,11 @@ if (!empty($attributes)) {
     <?php include 'navbar.php'; ?>
 
     <main class="admin-main">
-        <div class="admin-topbar">
+        <div class="admin-topbar" style="margin: 0;">
             <h1 class="admin-topbar-title">Tambah Produk Baru</h1>
         </div>
 
-        <div class="admin-content">
+        <div class="admin-content" style="margin: 0;">
             <?php if ($success_message): ?>
                 <div class="success-box">
                     <div class="success-icon">✅</div>

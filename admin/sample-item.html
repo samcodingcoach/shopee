@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Editorial Enterprise - Products</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#006385",
+                        "secondary-fixed": "#dfe2eb",
+                        "on-primary-container": "#fffbff",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#ffdad3",
+                        "on-secondary-container": "#61646c",
+                        "error": "#ba1a1a",
+                        "on-surface-variant": "#5b403b",
+                        "on-tertiary-container": "#fbfcff",
+                        "surface-variant": "#e2e2e2",
+                        "outline": "#8f7069",
+                        "on-primary-fixed-variant": "#8d1600",
+                        "inverse-surface": "#2f3131",
+                        "tertiary-fixed": "#c2e8ff",
+                        "inverse-on-surface": "#f1f1f1",
+                        "primary-container": "#d63c1e",
+                        "surface-dim": "#dadada",
+                        "on-tertiary-fixed-variant": "#004d67",
+                        "on-secondary": "#ffffff",
+                        "surface": "#f9f9f9",
+                        "on-background": "#1a1c1c",
+                        "secondary-container": "#dfe2eb",
+                        "primary": "#b22204",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#c3c6cf",
+                        "surface-tint": "#b62506",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#1a1c1c",
+                        "surface-container-high": "#e8e8e8",
+                        "tertiary-container": "#007ea7",
+                        "primary-fixed-dim": "#ffb4a4",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-primary": "#ffb4a4",
+                        "surface-container-low": "#f3f3f3",
+                        "secondary": "#5b5e66",
+                        "on-secondary-fixed": "#181c22",
+                        "on-primary-fixed": "#3e0500",
+                        "on-tertiary-fixed": "#001e2c",
+                        "on-tertiary": "#ffffff",
+                        "surface-bright": "#f9f9f9",
+                        "surface-container": "#eeeeee",
+                        "tertiary-fixed-dim": "#76d1ff",
+                        "on-secondary-fixed-variant": "#43474e",
+                        "surface-container-highest": "#e2e2e2",
+                        "outline-variant": "#e3beb6",
+                        "background": "#f9f9f9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9f9f9;
+            color: #1a1c1c;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .font-manrope {
+            font-family: 'Manrope', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="flex min-h-screen">
+    <!-- SideNavBar (Authority: JSON & Design System) -->
+    <aside
+        class="w-64 h-screen fixed left-0 top-0 bg-white dark:bg-zinc-950 flex flex-col h-full py-6 border-r border-zinc-100/15 dark:border-zinc-800/15 shadow-sm dark:shadow-none z-50">
+        <div class="px-6 mb-8">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-primary rounded flex items-center justify-center text-white font-bold">E</div>
+                <div>
+                    <h2 class="font-manrope font-semibold text-sm tracking-wide text-on-surface">Curator Admin</h2>
+                    <p class="text-[10px] text-zinc-500 uppercase tracking-widest">Enterprise Edition</p>
+                </div>
+            </div>
+        </div>
+        <nav class="flex-1 space-y-1"><!-- Dashboard Item -->
+            <a class="flex items-center px-6 py-3 text-slate-500 dark:text-slate-400 font-medium hover:text-on-surface hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors duration-200"
+                href="#">
+                <span class="material-symbols-outlined mr-3">dashboard</span>
+                <span class="font-manrope font-medium text-sm tracking-wide">Dashboard</span>
+            </a>
+            <!-- Application Item -->
+            <a class="flex items-center px-6 py-3 text-slate-500 dark:text-slate-400 font-medium hover:text-on-surface hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors duration-200"
+                href="#">
+                <span class="material-symbols-outlined mr-3">apps</span>
+                <span class="font-manrope font-medium text-sm tracking-wide">Application</span>
+            </a>
+            <!-- Product Item (Active) -->
+            <a class="flex items-center px-6 py-3 border-l-4 border-[#EE4D2D] text-on-surface font-semibold bg-slate-50 dark:bg-slate-900 transition-all duration-300 ease-in-out"
+                href="#">
+                <span class="material-symbols-outlined mr-3 text-[#EE4D2D]">inventory_2</span>
+                <span class="font-manrope font-medium text-sm tracking-wide">Product</span>
+            </a>
+        </nav>
+        <div class="mt-auto border-t border-zinc-100/15 pt-4">
+            <a class="flex items-center px-6 py-3 text-zinc-500 hover:text-[#EE4D2D] hover:bg-zinc-50 transition-all"
+                href="#">
+                <span class="material-symbols-outlined mr-3">help</span>
+                <span class="font-manrope font-medium text-sm tracking-wide">Support</span>
+            </a>
+            <a class="flex items-center px-6 py-3 text-zinc-500 hover:text-[#EE4D2D] hover:bg-zinc-50 transition-all"
+                href="#">
+                <span class="material-symbols-outlined mr-3">logout</span>
+                <span class="font-manrope font-medium text-sm tracking-wide">Logout</span>
+            </a>
+        </div>
+    </aside>
+    <!-- Main Content Canvas -->
+    <main class="flex-1 ml-64 min-h-screen flex flex-col">
+        <!-- TopNavBar (Authority: JSON) -->
+        <header
+            class="w-full h-16 sticky top-0 z-50 flex justify-between items-center px-8 w-full bg-surface dark:bg-zinc-950 tonal-shift bg-surface-container-low dark:bg-zinc-900 shadow-none">
+            <div class="flex items-center gap-6 flex-1">
+                <span class="text-[#EE4D2D] font-manrope font-extrabold tracking-tighter text-2xl">Shopee Open Platform
+                </span>
+                <div class="relative max-w-md w-full">
+                    <span
+                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-sm">search</span>
+                    <input
+                        class="w-full bg-surface-container-high border-none rounded-sm pl-10 text-sm py-2 focus:ring-1 focus:ring-primary focus:bg-white transition-all"
+                        placeholder="Search Global " type="text" />
+                </div>
+            </div>
+
+        </header>
+        <!-- Body Canvas -->
+        <div class="p-8 space-y-8 max-w-[1400px] mx-auto w-full">
+            <!-- Header Section -->
+            <div class="flex justify-between items-end">
+                <div>
+                    <nav class="flex gap-2 text-xs font-label uppercase tracking-widest text-zinc-400 mb-2">
+                        <span>API</span>
+                        <span>/</span>
+                        <span class="text-on-surface">Products</span>
+                    </nav>
+                    <h1 class="font-manrope text-4xl font-extrabold tracking-tight text-on-background">Products</h1>
+                </div>
+                <button
+                    class="flex items-center gap-2 bg-gradient-to-br from-[#b22204] to-[#d63c1e] text-white px-6 py-2.5 rounded-md font-semibold text-sm shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
+                    <span class="material-symbols-outlined text-sm">add</span>
+                    Create Product
+                </button>
+            </div>
+            <!-- Dashboard Stats Tonal Shift Layering -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-surface-container-lowest p-6 rounded-lg shadow-sm border-l-4 border-primary">
+                    <p class="text-xs font-label uppercase tracking-widest text-zinc-500 mb-1">Total Products</p>
+                    <p class="text-2xl font-manrope font-extrabold">1,284</p>
+                </div>
+                <div class="bg-surface-container-low p-6 rounded-lg">
+                    <p class="text-xs font-label uppercase tracking-widest text-zinc-500 mb-1">Active Now</p>
+                    <p class="text-2xl font-manrope font-extrabold">1,102</p>
+                </div>
+                <div class="bg-surface-container-low p-6 rounded-lg">
+                    <p class="text-xs font-label uppercase tracking-widest text-zinc-500 mb-1">Out of Stock</p>
+                    <p class="text-2xl font-manrope font-extrabold text-error">12</p>
+                </div>
+                <div class="bg-surface-container-low p-6 rounded-lg">
+                    <p class="text-xs font-label uppercase tracking-widest text-zinc-500 mb-1">Total Value</p>
+                    <p class="text-2xl font-manrope font-extrabold">$284.5k</p>
+                </div>
+            </div>
+            <!-- Table Section with "No-Line" Philosophy -->
+            <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col">
+                <!-- Filters & Search Bar -->
+                <div class="p-6 flex flex-wrap items-center justify-between gap-4 bg-surface-container-low/50">
+                    <div class="flex items-center gap-4 flex-1 min-w-[300px]">
+                        <div class="relative flex-1 max-w-sm">
+                            <span
+                                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">search</span>
+                            <input
+                                class="w-full bg-white border border-outline-variant/20 rounded-md pl-10 pr-4 py-2 text-sm focus:ring-1 focus:ring-primary focus:border-primary"
+                                placeholder="Search product name, SKU..." type="text" />
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <select
+                                class="bg-white border border-outline-variant/20 rounded-md px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-primary">
+                                <option>All Categories</option>
+                                <option>Tech</option>
+                                <option>Home</option>
+                                <option>Lifestyle</option>
+                            </select>
+                            <select
+                                class="bg-white border border-outline-variant/20 rounded-md px-3 py-2 text-xs font-medium focus:ring-1 focus:ring-primary">
+                                <option>Status: All</option>
+                                <option>Active</option>
+                                <option>Draft</option>
+                                <option>Out of Stock</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button
+                            class="flex items-center gap-2 text-xs font-semibold px-3 py-2 text-zinc-600 hover:bg-surface-bright rounded">
+                            <span class="material-symbols-outlined text-sm">filter_list</span>
+                            Sort: Newest
+                        </button>
+                        <button
+                            class="flex items-center gap-2 text-xs font-semibold px-3 py-2 text-zinc-600 hover:bg-surface-bright rounded">
+                            <span class="material-symbols-outlined text-sm">download</span>
+                            Export
+                        </button>
+                    </div>
+                </div>
+                <!-- Main Data Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-surface-container-low/30 border-b border-outline-variant/10">
+                                <th class="px-6 py-4 text-[10px] font-label uppercase tracking-widest text-zinc-500">
+                                    Image</th>
+                                <th class="px-6 py-4 text-[10px] font-label uppercase tracking-widest text-zinc-500">
+                                    Product Name</th>
+                                <th class="px-6 py-4 text-[10px] font-label uppercase tracking-widest text-zinc-500">SKU
+                                </th>
+                                <th class="px-6 py-4 text-[10px] font-label uppercase tracking-widest text-zinc-500">
+                                    Price</th>
+                                <th class="px-6 py-4 text-[10px] font-label uppercase tracking-widest text-zinc-500">
+                                    Stock</th>
+                                <th class="px-6 py-4 text-[10px] font-label uppercase tracking-widest text-zinc-500">
+                                    Status</th>
+                                <th class="px-6 py-4 text-[10px] font-label uppercase tracking-widest text-zinc-500">
+                                    Category</th>
+                                <th
+                                    class="px-6 py-4 text-[10px] font-label uppercase tracking-widest text-zinc-500 text-right">
+                                    Last Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant/5">
+                            <!-- Product Row 1 -->
+                            <tr class="hover:bg-surface-bright transition-colors cursor-pointer group">
+                                <td class="px-6 py-4">
+                                    <div class="w-12 h-12 rounded bg-surface-container-high overflow-hidden">
+                                        <img alt="Minimalist Watch" class="w-full h-full object-cover"
+                                            data-alt="High-end minimalist silver watch on a white background with soft shadows and elegant studio lighting"
+                                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCX0CNwIaRs1t8EWy2endpUcT2tgvqIMawostDN6eD1qqdLxOKJjOg6I-L6F3qeIsrDhtkyDnm_Nz1NPDCZht_Zpf9snGsPpD5CFi9o1YaWD6eB2FmJbuscCyPFLWHyCkQJSo7v7jwc0baY0vBgw7wPP7dRWaYpBRl2dB39ZLjhAyu2cSBMCZZzN-annky0oTX50LeHDsOwjMHxp1uVYCp-P5e2RJ2uVp2C6iAsP_uZctZDtrVFgcPiDPjwInlHxjCCqmvsMn7G2QM" />
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="font-manrope font-bold text-sm text-on-background">Chronos Elite Watch
+                                    </div>
+                                    <div class="text-[10px] text-zinc-400">Limited Edition</div>
+                                </td>
+                                <td class="px-6 py-4 text-xs font-mono text-zinc-500 uppercase">CH-8821-X</td>
+                                <td class="px-6 py-4 text-sm font-semibold">$599.00</td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm font-medium">142</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span
+                                        class="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-green-50 text-green-700">Active</span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-zinc-600">Tech &amp; Accessories</td>
+                                <td class="px-6 py-4 text-xs text-right text-zinc-400">2 hours ago</td>
+                            </tr>
+                            <!-- Product Row 2 -->
+                            <tr class="hover:bg-surface-bright transition-colors cursor-pointer">
+                                <td class="px-6 py-4">
+                                    <div class="w-12 h-12 rounded bg-surface-container-high overflow-hidden">
+                                        <img alt="Premium Headphones" class="w-full h-full object-cover"
+                                            data-alt="Professional gold and black studio headphones resting on a minimalist concrete surface with moody directional lighting"
+                                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQnFyAtRb5Kz8MzemaHUD-HOrwmpDHZn7NMWWn6VV7bGiqKVW--UK0INmuCHMNaaaLPQVMdiNsbOarPNcJy7Mu2fQa3QH4AjwMdWtF_E7b9WUYVJ3tS65KMKmjAI1hAEbB39vUrt_E4fyyKIIneYYqL61t7Z8RDU-tLT9XFqSAxLbOolhmnplnSP94MAlJa5rUabzD4BLEIfQW44LB08D0J1NQfKJ6gQhWgVYIqNr9uZLa5FMjHd5ZAjFmTYpVvVghklQiv966Lb8" />
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="font-manrope font-bold text-sm text-on-background">Acoustic Pro Over-Ear
+                                    </div>
+                                    <div class="text-[10px] text-zinc-400">Best Seller</div>
+                                </td>
+                                <td class="px-6 py-4 text-xs font-mono text-zinc-500 uppercase">AUD-009-PRO</td>
+                                <td class="px-6 py-4 text-sm font-semibold">$299.50</td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm font-medium text-error">8</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span
+                                        class="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-50 text-red-700">Low
+                                        Stock</span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-zinc-600">Audio Gear</td>
+                                <td class="px-6 py-4 text-xs text-right text-zinc-400">Oct 24, 2023</td>
+                            </tr>
+                            <!-- Product Row 3 -->
+                            <tr class="hover:bg-surface-bright transition-colors cursor-pointer">
+                                <td class="px-6 py-4">
+                                    <div class="w-12 h-12 rounded bg-surface-container-high overflow-hidden">
+                                        <img alt="Sunglasses" class="w-full h-full object-cover"
+                                            data-alt="Stylized aviator sunglasses with gradient lenses reflecting a desert sunset sky in cinematic lighting"
+                                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWv8r0kC2ikYl3TNiT8_OcJeKdpWRKJKvGzlRdJmCvpIMGjRMMpW3rRtrYTMAqAgOQyBpWx3HBkHkESkS4ax9iOf_p1P1oxor80mWlMluyXeziHMMiWhDifPJ1p_oIrkWNeOBj7uYHgXGBNrRrP8bSbqHy2VhycrFJl6mExyRPqojv3G59_F6MIdiJqz5DmwiXDLnho6Bo7DGQ29iNqyV1cVWMwAmWMVzBgutbGzmBS5qLl5UR1XKgoZsYldSRDN44xsqwjLbE7HM" />
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="font-manrope font-bold text-sm text-on-background">Vanguard Sun Shields
+                                    </div>
+                                    <div class="text-[10px] text-zinc-400">Summer Collection</div>
+                                </td>
+                                <td class="px-6 py-4 text-xs font-mono text-zinc-500 uppercase">LENS-V-22</td>
+                                <td class="px-6 py-4 text-sm font-semibold">$125.00</td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm font-medium">0</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span
+                                        class="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-zinc-100 text-zinc-500">Out
+                                        of Stock</span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-zinc-600">Eyewear</td>
+                                <td class="px-6 py-4 text-xs text-right text-zinc-400">Yesterday</td>
+                            </tr>
+                            <!-- Product Row 4 -->
+                            <tr class="hover:bg-surface-bright transition-colors cursor-pointer">
+                                <td class="px-6 py-4">
+                                    <div class="w-12 h-12 rounded bg-surface-container-high overflow-hidden">
+                                        <img alt="Running Shoes" class="w-full h-full object-cover"
+                                            data-alt="Dynamic shot of red athletic sneakers on a dark reflective floor with professional spotlighting highlighting material texture"
+                                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEUtN1L39US55dnMbKhcP8Km_h3IDvtu-4wzjhqo63YHXAnIZGELyyLbOqpjvE2O3Mlyx_1rN_QDJnWzT5f9ieZc_mgdLu4Co1NWosqcnDfSIeYs_fXS-CmiIqxH3AqskKhjjyTWbdt1jVG5DUgK5p7mVMAhnOoQwv20iA0HcoXRNj8ThHDgW1pVJijia0lJTZ6qAJxzgtZwV13r8QU1Prjr3IJPYimkDN32ExnsfsI2_cvk4HbKShhX_PKS_K7x4ADBlRRiWh7vU" />
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="font-manrope font-bold text-sm text-on-background">Bolt Runner Max</div>
+                                    <div class="text-[10px] text-zinc-400">Draft Listing</div>
+                                </td>
+                                <td class="px-6 py-4 text-xs font-mono text-zinc-500 uppercase">FOOT-BLT-R</td>
+                                <td class="px-6 py-4 text-sm font-semibold">$180.00</td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm font-medium">500</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span
+                                        class="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-orange-50 text-orange-700">Draft</span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-zinc-600">Footwear</td>
+                                <td class="px-6 py-4 text-xs text-right text-zinc-400">Oct 20, 2023</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination (The "Focus Glow" feedback) -->
+                <div class="p-6 border-t border-outline-variant/10 flex items-center justify-between">
+                    <p class="text-xs text-zinc-500 font-medium">Showing 1 to 4 of 1,284 results</p>
+                    <div class="flex items-center gap-2">
+                        <button class="p-2 rounded hover:bg-surface-container-high text-zinc-500 transition-colors">
+                            <span class="material-symbols-outlined text-sm">chevron_left</span>
+                        </button>
+                        <button
+                            class="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-primary text-white">1</button>
+                        <button
+                            class="w-8 h-8 rounded flex items-center justify-center text-xs font-bold text-zinc-600 hover:bg-surface-container-high transition-colors">2</button>
+                        <button
+                            class="w-8 h-8 rounded flex items-center justify-center text-xs font-bold text-zinc-600 hover:bg-surface-container-high transition-colors">3</button>
+                        <span class="text-zinc-400 text-xs px-2">...</span>
+                        <button
+                            class="w-8 h-8 rounded flex items-center justify-center text-xs font-bold text-zinc-600 hover:bg-surface-container-high transition-colors">42</button>
+                        <button class="p-2 rounded hover:bg-surface-container-high text-zinc-500 transition-colors">
+                            <span class="material-symbols-outlined text-sm">chevron_right</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <footer class="mt-auto py-8 text-center border-t border-outline-variant/5">
+            <p class="text-[10px] font-label uppercase tracking-[0.2em] text-zinc-400">© 2024 Editorial Enterprise •
+                Samsu Software 2026</p>
+        </footer>
+    </main>
+</body>
+
+</html>
