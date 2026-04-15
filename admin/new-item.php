@@ -159,91 +159,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
                         $logistics = $response_data['logistics'];
                     }
 
-                    // --- GET ATTRIBUTE TREE ---
-                    $apiPathAttr = "/api/v2/product/get_attribute_tree";
-                    $timestampAttr = (string)time();
-                    $baseStringAttr = $partnerId . $apiPathAttr . $timestampAttr . $accessToken . $shopId;
-                    $signAttr = hash_hmac('sha256', $baseStringAttr, $partnerKey);
-
-                    $finalUrlAttr = sprintf("%s%s?partner_id=%s&timestamp=%s&access_token=%s&shop_id=%s&sign=%s&language=id&category_id_list=%s",
-                        $baseUrl, $apiPathAttr, $partnerId, $timestampAttr, $accessToken, $shopId, $signAttr, $category_id
-                    );
-
-                    $chAttr = curl_init();
-                    curl_setopt($chAttr, CURLOPT_URL, $finalUrlAttr);
-                    curl_setopt($chAttr, CURLOPT_RETURNTRANSFER, true);
-                    $responseAttr = curl_exec($chAttr);
-                    curl_close($chAttr);
-
-                    // DATA CADANGAN (FALLBACK) UNTUK SANDBOX YANG CACAT
-                    $sandbox_fallback_data = [
-                        '301942' => [ // ID Kategori Laptop
-                            200388 => [ // Tipe Laptop
-                                ['value_id' => 11032792, 'display_value_name' => 'Thin and Light'],
-                                ['value_id' => 11032793, 'display_value_name' => 'Gaming'],
-                                ['value_id' => 11032794, 'display_value_name' => '2 in 1']
-                            ],
-                            200370 => [ // Jenis Garansi
-                                ['value_id' => 10921, 'display_value_name' => 'Garansi Resmi'],
-                                ['value_id' => 10922, 'display_value_name' => 'Garansi Distributor']
-                            ]
-                        ]
-                    ];
-
-                    if ($responseAttr) {
-                        $attr_data = json_decode($responseAttr, true);
-                        if (isset($attr_data['error']) && $attr_data['error'] !== "") {
-                            $debug_attr_error = $attr_data['message'];
-                        } elseif (isset($attr_data['response']['list'][0]['attribute_tree'])) {
-                            foreach ($attr_data['response']['list'][0]['attribute_tree'] as $attr) {
-                                
-                                // Ambil nama atribut (utamakan bahasa Indonesia)
-                                $display_name = $attr['name'];
-                                if (isset($attr['multi_lang'][0]['value'])) {
-                                    $display_name = $attr['multi_lang'][0]['value'];
-                                }
-                                $attr['display_attribute_name'] = $display_name;
-                                $attr['is_mandatory'] = $attr['mandatory'] ?? false;
-
-                                // PROSES NILAI (DROPDOWN)
-                                $processed_values = [];
-                                
-                                // 1. Coba ambil dari API dulu
-                                if (isset($attr['attribute_value_list']) && is_array($attr['attribute_value_list'])) {
-                                    foreach ($attr['attribute_value_list'] as $val) {
-                                        $val_name = $val['name'];
-                                        if (isset($val['multi_lang'][0]['value'])) {
-                                            $val_name = $val['multi_lang'][0]['value'];
-                                        }
-                                        $processed_values[] = [
-                                            'value_id' => $val['value_id'],
-                                            'display_value_name' => $val_name
-                                        ];
-                                    }
-                                }
-
-                                // 2. Jika dari API kosong (cacat), coba cek data cadangan kita
-                                if (empty($processed_values) && isset($sandbox_fallback_data[$category_id][$attr['attribute_id']])) {
-                                    $processed_values = $sandbox_fallback_data[$category_id][$attr['attribute_id']];
-                                }
-
-                                // Simpan kembali nilai yang sudah diproses ke array utama
-                                $attr['attribute_value_list'] = $processed_values;
-                                $attributes[] = $attr;
-                            }
-                            $step = 4;
-                        }
-                    } else {
-                        $debug_attr_error = "Tidak ada respons dari API Atribut Shopee.";
-                    }
-
-                    $form_data = [
-                        'item_name' => '', 'original_price' => '', 'description' => '',
-                        'weight' => '', 'item_status' => 'NORMAL', 'item_sku' => '',
-                        'condition' => 'NEW', 'stock' => '50', 'wholesale_min' => '10',
-                        'wholesale_max' => '10', 'wholesale_price' => '', 'package_height' => '10',
-                        'package_length' => '15', 'package_width' => '10', 'attributes' => []
-                    ];
+                    // Simpan logistics untuk step 3, jangan fetch attributes dulu
+                    $step = 3;
                 }
             } else {
                 $error_message = "No access token for this app (ID: $id_app)";
@@ -259,7 +176,118 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
     $image_id = $_POST['image_id'] ?? '';
     $category_id = $_POST['category_id'] ?? '';
     $selected_logistic = $_POST['logistic_id'] ?? '';
+    $id_app = $_POST['id_app'] ?? '';
     $step = 3;
+
+    if ($id_app) {
+        $query = "SELECT a.partner_id, a.partner_key, a.shop_id, t.access_token
+                  FROM app a
+                  LEFT JOIN token t ON a.id_app = t.id_app
+                  WHERE a.id_app = ?
+                  ORDER BY t.created_date DESC
+                  LIMIT 1";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("i", $id_app);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($row = $result->fetch_assoc()) {
+            $partnerId = $row['partner_id'];
+            $partnerKey = $row['partner_key'];
+            $shopId = $row['shop_id'];
+            $accessToken = $row['access_token'];
+
+            if ($accessToken) {
+                // --- GET ATTRIBUTE TREE ---
+                $apiPathAttr = "/api/v2/product/get_attribute_tree";
+                $timestampAttr = (string)time();
+                $baseStringAttr = $partnerId . $apiPathAttr . $timestampAttr . $accessToken . $shopId;
+                $signAttr = hash_hmac('sha256', $baseStringAttr, $partnerKey);
+
+                $baseUrl = "https://openplatform.sandbox.test-stable.shopee.sg";
+                $finalUrlAttr = sprintf("%s%s?partner_id=%s&timestamp=%s&access_token=%s&shop_id=%s&sign=%s&language=id&category_id_list=%s",
+                    $baseUrl, $apiPathAttr, $partnerId, $timestampAttr, $accessToken, $shopId, $signAttr, $category_id
+                );
+
+                $chAttr = curl_init();
+                curl_setopt($chAttr, CURLOPT_URL, $finalUrlAttr);
+                curl_setopt($chAttr, CURLOPT_RETURNTRANSFER, true);
+                $responseAttr = curl_exec($chAttr);
+                curl_close($chAttr);
+
+                // DATA CADANGAN (FALLBACK) UNTUK SANDBOX YANG CACAT
+                $sandbox_fallback_data = [
+                    '301942' => [ // ID Kategori Laptop
+                        200388 => [ // Tipe Laptop
+                            ['value_id' => 11032792, 'display_value_name' => 'Thin and Light'],
+                            ['value_id' => 11032793, 'display_value_name' => 'Gaming'],
+                            ['value_id' => 11032794, 'display_value_name' => '2 in 1']
+                        ],
+                        200370 => [ // Jenis Garansi
+                            ['value_id' => 10921, 'display_value_name' => 'Garansi Resmi'],
+                            ['value_id' => 10922, 'display_value_name' => 'Garansi Distributor']
+                        ]
+                    ]
+                ];
+
+                if ($responseAttr) {
+                    $attr_data = json_decode($responseAttr, true);
+                    if (isset($attr_data['error']) && $attr_data['error'] !== "") {
+                        $debug_attr_error = $attr_data['message'];
+                    } elseif (isset($attr_data['response']['list'][0]['attribute_tree'])) {
+                        foreach ($attr_data['response']['list'][0]['attribute_tree'] as $attr) {
+                            
+                            // Ambil nama atribut (utamakan bahasa Indonesia)
+                            $display_name = $attr['name'];
+                            if (isset($attr['multi_lang'][0]['value'])) {
+                                $display_name = $attr['multi_lang'][0]['value'];
+                            }
+                            $attr['display_attribute_name'] = $display_name;
+                            $attr['is_mandatory'] = $attr['mandatory'] ?? false;
+
+                            // PROSES NILAI (DROPDOWN)
+                            $processed_values = [];
+                            
+                            // 1. Coba ambil dari API dulu
+                            if (isset($attr['attribute_value_list']) && is_array($attr['attribute_value_list'])) {
+                                foreach ($attr['attribute_value_list'] as $val) {
+                                    $val_name = $val['name'];
+                                    if (isset($val['multi_lang'][0]['value'])) {
+                                        $val_name = $val['multi_lang'][0]['value'];
+                                    }
+                                    $processed_values[] = [
+                                        'value_id' => $val['value_id'],
+                                        'display_value_name' => $val_name
+                                    ];
+                                }
+                            }
+
+                            // 2. Jika dari API kosong (cacat), coba cek data cadangan kita
+                            if (empty($processed_values) && isset($sandbox_fallback_data[$category_id][$attr['attribute_id']])) {
+                                $processed_values = $sandbox_fallback_data[$category_id][$attr['attribute_id']];
+                            }
+
+                            // Simpan kembali nilai yang sudah diproses ke array utama
+                            $attr['attribute_value_list'] = $processed_values;
+                            $attributes[] = $attr;
+                        }
+                        $step = 4;
+                    }
+                } else {
+                    $debug_attr_error = "Tidak ada respons dari API Atribut Shopee.";
+                }
+
+                $form_data = [
+                    'item_name' => '', 'original_price' => '', 'description' => '',
+                    'weight' => '', 'item_status' => 'NORMAL', 'item_sku' => '',
+                    'condition' => 'NEW', 'stock' => '50', 'wholesale_min' => '10',
+                    'wholesale_max' => '10', 'wholesale_price' => '', 'package_height' => '10',
+                    'package_length' => '15', 'package_width' => '10', 'attributes' => []
+                ];
+            }
+        }
+        $stmt->close();
+    }
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_product'])) {
 
     $product_data = [
@@ -312,9 +340,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
 }
 
 // Determine current step
-if ($category_id && empty($attributes)) {
-    $step = 3;
-}
 if (!empty($attributes)) {
     $step = 4;
 }
