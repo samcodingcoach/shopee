@@ -77,6 +77,19 @@ $productData = [
         ]
     ],
     "category_id" => isset($_POST['category_id']) ? (int)$_POST['category_id'] : 301034,
+    
+    // Mandatory attributes based on selected category
+    "attribute_list" => isset($_POST['attribute_list']) ? json_decode($_POST['attribute_list'], true) : [
+        [
+            "attribute_id" => 200218, // Bag Size - from error message
+            "attribute_value_list" => [
+                [
+                    "value_id" => 0, // 0 for custom/free text input
+                    "original_value_name" => "Lainnya"
+                ]
+            ]
+        ]
+    ],
     "brand" => [
         "brand_id" => 0,
         "original_brand_name" => "No Brand"
