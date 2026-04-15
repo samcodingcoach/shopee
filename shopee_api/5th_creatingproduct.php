@@ -64,51 +64,57 @@ $finalUrl = sprintf("%s%s?partner_id=%s&timestamp=%s&access_token=%s&shop_id=%s&
 
 // RAKIT PAYLOAD PRODUK (JSON)
 $productData = [
-    "original_price" => $_POST['original_price'] ?? 350000, // Harga wajib integer di Indonesia (tanpa desimal)
+    "original_price" => isset($_POST['original_price']) ? (int)$_POST['original_price'] : 350000,
     "description" => $_POST['description'] ?? "Jam tangan pria elegan, anti air hingga 30 meter. Cocok untuk acara formal maupun kasual.",
-    "weight" => $_POST['weight'] ?? 0.3, // Berat dalam Kilogram
+    "weight" => isset($_POST['weight']) ? (float)$_POST['weight'] : 0.3,
     "item_name" => $_POST['item_name'] ?? "Jam Tangan Pria Anti Air Premium",
     "item_status" => $_POST['item_status'] ?? "NORMAL",
-    
-    // --- PENAMBAHAN SKU, KONDISI, & GROSIR ---
-    "item_sku" => $_POST['item_sku'] ?? "JAM-PRIA-001",
+    "item_sku" => $_POST['item_sku'] ?? "",
     "condition" => $_POST['condition'] ?? "NEW",
-    "wholesale" => [
-        [
-            "min_count" => $_POST['wholesale_min'] ?? 10,
-            "max_count" => $_POST['wholesale_max'] ?? 10,
-            "unit_price" => $_POST['wholesale_price'] ?? 140000 // Harga harus di bawah original_price
-        ]
-    ],
-    // -----------------------------------------
-
     "seller_stock" => [
         [
-            "stock" => $_POST['stock'] ?? 50
+            "stock" => isset($_POST['stock']) ? (int)$_POST['stock'] : 50
         ]
     ],
-    "category_id" => $_POST['category_id'] ?? 301034, // ID Kategori
+    "category_id" => isset($_POST['category_id']) ? (int)$_POST['category_id'] : 301034,
     "brand" => [
         "brand_id" => 0,
         "original_brand_name" => "No Brand"
     ],
-    "dimension" => [ // Wajib ada karena kurir tipe SIZE_INPUT
-        "package_height" => $_POST['package_height'] ?? 10,
-        "package_length" => $_POST['package_length'] ?? 15,
-        "package_width" => $_POST['package_width'] ?? 10
+    "dimension" => [
+        "package_height" => isset($_POST['package_height']) ? (int)$_POST['package_height'] : 10,
+        "package_length" => isset($_POST['package_length']) ? (int)$_POST['package_length'] : 15,
+        "package_width" => isset($_POST['package_width']) ? (int)$_POST['package_width'] : 10
     ],
     "logistic_info" => [
         [
-            "logistic_id" => $_POST['logistic_id'] ?? 81017, // ID Sandbox J&T Express
+            "logistic_id" => isset($_POST['logistic_id']) ? (int)$_POST['logistic_id'] : 81017,
             "enabled" => true
         ]
     ],
     "image" => [
         "image_id_list" => [
-            $_POST['image_id'] ?? "sg-11134201-81z1k-mn0u7nz0w5j5eb" // ID Gambar yang Anda dapatkan di Langkah 1
+            !empty($_POST['image_id']) ? $_POST['image_id'] : ""
         ]
     ]
 ];
+
+// Add wholesale only if valid (50%-99% of original price)
+$original_price = isset($_POST['original_price']) ? (int)$_POST['original_price'] : 0;
+$wholesale_price = isset($_POST['wholesale_price']) ? (int)$_POST['wholesale_price'] : 0;
+
+if ($wholesale_price > 0 && $original_price > 0) {
+    $ratio = ($wholesale_price / $original_price) * 100;
+    if ($ratio >= 50 && $ratio <= 99) {
+        $productData["wholesale"] = [
+            [
+                "min_count" => isset($_POST['wholesale_min']) ? (int)$_POST['wholesale_min'] : 10,
+                "max_count" => isset($_POST['wholesale_max']) ? (int)$_POST['wholesale_max'] : 10,
+                "unit_price" => $wholesale_price
+            ]
+        ];
+    }
+}
 
 $jsonBody = json_encode($productData);
 

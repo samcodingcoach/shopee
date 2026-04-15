@@ -241,7 +241,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
         curl_setopt($ch, CURLOPT_URL, $api_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $product_data);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($product_data));
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded']);
 
         $response = curl_exec($ch);
@@ -367,11 +367,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
                     if (checkedRadio) {
                         document.getElementById('hidden_logistic_id').value = checkedRadio.value;
                     }
+                    // Sync image_id from readonly field to hidden field
+                    const imageIdDisplay = document.getElementById('image_id_display');
+                    if (imageIdDisplay) {
+                        document.getElementById('hidden_image_id').value = imageIdDisplay.value;
+                    }
                 </script>
 
                 <h3>Product Information</h3>
                 <form method="POST">
-                    <input type="hidden" name="image_id" value="<?php echo htmlspecialchars($image_id); ?>">
+                    <input type="hidden" name="image_id" value="<?php echo htmlspecialchars($image_id); ?>" id="hidden_image_id">
                     <input type="hidden" name="category_id" value="<?php echo htmlspecialchars($category_id); ?>">
                     <input type="hidden" name="id_app" value="<?php echo htmlspecialchars($_POST['id_app'] ?? ''); ?>">
                     <input type="hidden" name="logistic_id" id="hidden_logistic_id" value="<?php echo htmlspecialchars($selected_logistic); ?>">
@@ -427,6 +432,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
                     <hr>
 
                     <h4>Wholesale (Optional)</h4>
+                    <p style="color: gray; font-size: 12px;">Note: Wholesale price must be between 50% - 99% of original price. Leave empty to disable wholesale.</p>
                     <p>
                         <label>Wholesale Min Count:</label><br>
                         <input type="number" name="wholesale_min" style="width: 400px;" value="10">
@@ -439,7 +445,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image'])) {
 
                     <p>
                         <label>Wholesale Unit Price:</label><br>
-                        <input type="number" name="wholesale_price" style="width: 400px;" placeholder="Must be below original price">
+                        <input type="number" name="wholesale_price" style="width: 400px;" placeholder="50%-99% of original price, e.g. 175000">
                     </p>
 
                     <hr>
