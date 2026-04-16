@@ -4,10 +4,12 @@ async function loadPartners() {
     const loadingMsg = document.getElementById('loadingMessage');
     const errorMsg = document.getElementById('errorMessage');
     const tableContent = document.getElementById('tableContent');
+    const emptyState = document.getElementById('emptyState');
 
-    loadingMsg.style.display = 'block';
-    errorMsg.style.display = 'none';
-    tableContent.style.display = 'none';
+    loadingMsg.classList.remove('hidden');
+    errorMsg.classList.add('hidden');
+    tableContent.classList.add('hidden');
+    emptyState.classList.add('hidden');
 
     try {
         const response = await fetch('../api/partner/list.php');
@@ -20,13 +22,18 @@ async function loadPartners() {
         const partners = data.data || [];
         renderTable(partners);
 
-        loadingMsg.style.display = 'none';
-        tableContent.style.display = 'block';
+        loadingMsg.classList.add('hidden');
+
+        if (partners.length > 0) {
+            tableContent.classList.remove('hidden');
+        } else {
+            emptyState.classList.remove('hidden');
+        }
 
     } catch (error) {
-        loadingMsg.style.display = 'none';
-        errorMsg.style.display = 'flex';
-        errorMsg.innerHTML = `<span>⚠️</span><span>${escapeHtml(error.message)}</span>`;
+        loadingMsg.classList.add('hidden');
+        errorMsg.classList.remove('hidden');
+        document.getElementById('errorText').innerHTML = `<span>${escapeHtml(error.message)}</span>`;
         console.error('Error loading partners:', error);
     }
 }
@@ -36,17 +43,6 @@ function renderTable(partners) {
     tableBody.innerHTML = '';
 
     if (partners.length === 0) {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="6">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📭</div>
-                        <div class="empty-state-title">Tidak Ada Application</div>
-                        <div class="empty-state-text">Belum ada application yang tersedia</div>
-                    </div>
-                </td>
-            </tr>
-        `;
         return;
     }
 
@@ -58,27 +54,32 @@ function renderTable(partners) {
 
 function createPartnerRow(partner, index) {
     const row = document.createElement('tr');
+    row.className = 'hover:bg-surface-bright transition-colors group';
 
-    const statusClass = partner.status_app === 1 ? 'badge-green' : 'badge-gray';
-    const statusText = partner.status_app === 1 ? 'Live Production' : 'Developing';
+    const statusBadge = partner.status_app === 1 
+        ? '<span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-green-50 text-green-700">Live Production</span>' 
+        : '<span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-zinc-100 text-zinc-500">Developing</span>';
+    
     const maskedKey = maskText(partner.partner_key);
 
     row.innerHTML = `
-        <td class="text-center">${index}</td>
-        <td class="fw-semibold">${escapeHtml(partner.nama_app)}</td>
-        <td>
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <span id="partnerKey-${index}" class="text-muted" style="max-width: 250px; word-break: break-all;">${maskedKey}</span>
-                <button type="button" class="btn btn-outline btn-sm btn-icon" onclick="toggleMask(${index}, '${escapeHtml(partner.partner_key).replace(/'/g, "\\'")}')" title="Toggle visibility" style="padding: 4px 8px; font-size: 14px;">
-                    👁️
+        <td class="px-6 py-4 text-center text-xs font-mono text-zinc-500">${index}</td>
+        <td class="px-6 py-4">
+            <div class="font-manrope font-bold text-sm text-on-background">${escapeHtml(partner.nama_app)}</div>
+        </td>
+        <td class="px-6 py-4">
+            <div class="flex items-center gap-2">
+                <span id="partnerKey-${index}" class="text-xs font-mono text-zinc-500 truncate max-w-[200px]" style="display:inline-block;">${maskedKey}</span>
+                <button type="button" class="text-zinc-400 hover:text-primary transition-colors flex items-center justify-center p-1 rounded hover:bg-surface-container" onclick="toggleMask(${index}, '${escapeHtml(partner.partner_key).replace(/'/g, "\\'")}')" title="Toggle visibility">
+                    <span class="material-symbols-outlined text-[16px]">visibility</span>
                 </button>
             </div>
         </td>
-        <td class="text-muted">${escapeHtml(partner.partner_id)}</td>
-        <td><span class="badge-status ${statusClass}">${statusText}</span></td>
-        <td class="text-center">
-            <button class="btn btn-outline btn-sm btn-icon" onclick='editPartner(${JSON.stringify(partner)})' title="Edit">
-                ✏️
+        <td class="px-6 py-4 text-xs font-mono text-zinc-500 uppercase">${escapeHtml(partner.partner_id)}</td>
+        <td class="px-6 py-4">${statusBadge}</td>
+        <td class="px-6 py-4 text-center">
+            <button class="text-zinc-400 hover:text-primary transition-colors p-2 rounded hover:bg-surface-container flex items-center justify-center mx-auto" onclick='editPartner(${JSON.stringify(partner)})' title="Edit">
+                <span class="material-symbols-outlined text-[18px]">edit</span>
             </button>
         </td>
     `;
@@ -105,14 +106,18 @@ function editPartner(partner) {
 
 function showModal() {
     const modal = document.getElementById('partnerModal');
-    modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('show'), 10);
+    const modalBox = modal.querySelector('.modal-box-content');
+    modal.classList.remove('pointer-events-none', 'opacity-0');
+    modalBox.classList.remove('scale-95');
+    modalBox.classList.add('scale-100');
 }
 
 function closeModal() {
     const modal = document.getElementById('partnerModal');
-    modal.classList.remove('show');
-    setTimeout(() => modal.style.display = 'none', 300);
+    const modalBox = modal.querySelector('.modal-box-content');
+    modal.classList.add('pointer-events-none', 'opacity-0');
+    modalBox.classList.add('scale-95');
+    modalBox.classList.remove('scale-100');
 }
 
 document.getElementById('partnerForm').addEventListener('submit', async function(e) {
