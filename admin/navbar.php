@@ -10,16 +10,23 @@
     </div>
     
     <nav class="flex-1 space-y-1">
-        <!-- Product Item (Active) -->
-        <a href="item.php" class="flex items-center px-6 py-3 border-l-4 <?php echo basename($_SERVER['PHP_SELF']) === 'item.php' ? 'border-[#EE4D2D] text-on-surface font-semibold bg-slate-50 dark:bg-slate-900' : 'border-transparent text-slate-500 hover:text-on-surface hover:bg-slate-50'; ?> transition-all duration-300 ease-in-out">
-            <span class="material-symbols-outlined mr-3 <?php echo basename($_SERVER['PHP_SELF']) === 'item.php' ? 'text-[#EE4D2D]' : ''; ?>">inventory_2</span>
-            <span class="font-manrope font-medium text-sm tracking-wide">Product</span>
+        <!-- Dashboard Item -->
+        <a class="flex items-center px-6 py-3 border-l-4 <?php echo basename($_SERVER['PHP_SELF']) === 'index.php' ? 'border-[#EE4D2D] text-on-surface font-semibold bg-slate-50 dark:bg-slate-900' : 'border-transparent text-slate-500 dark:text-slate-400 font-medium hover:text-on-surface hover:bg-slate-50 dark:hover:bg-slate-900/50'; ?> transition-colors duration-200" href="#">
+            <span class="material-symbols-outlined mr-3 <?php echo basename($_SERVER['PHP_SELF']) === 'index.php' ? 'text-[#EE4D2D]' : ''; ?>">dashboard</span>
+            <span class="font-manrope font-medium text-sm tracking-wide">Dashboard</span>
         </a>
-        
+
         <!-- Application Item -->
-        <a href="partner.php" class="flex items-center px-6 py-3 border-l-4 <?php echo basename($_SERVER['PHP_SELF']) === 'partner.php' ? 'border-[#EE4D2D] text-on-surface font-semibold bg-slate-50 dark:bg-slate-900' : 'border-transparent text-slate-500 hover:text-on-surface hover:bg-slate-50'; ?> transition-all duration-300 ease-in-out">
+        <a href="partner.php" class="flex items-center px-6 py-3 border-l-4 <?php echo basename($_SERVER['PHP_SELF']) === 'partner.php' ? 'border-[#EE4D2D] text-on-surface font-semibold bg-slate-50 dark:bg-slate-900' : 'border-transparent text-slate-500 dark:text-slate-400 font-medium hover:text-on-surface hover:bg-slate-50 dark:hover:bg-slate-900/50'; ?> transition-all duration-300 ease-in-out">
             <span class="material-symbols-outlined mr-3 <?php echo basename($_SERVER['PHP_SELF']) === 'partner.php' ? 'text-[#EE4D2D]' : ''; ?>">apps</span>
             <span class="font-manrope font-medium text-sm tracking-wide">Application</span>
+        </a>
+        
+        <!-- Product Item (Active for item.php & new-item.php) -->
+        <?php $is_product_active = in_array(basename($_SERVER['PHP_SELF']), ['item.php', 'new-item.php']); ?>
+        <a href="item.php" class="flex items-center px-6 py-3 border-l-4 <?php echo $is_product_active ? 'border-[#EE4D2D] text-on-surface font-semibold bg-slate-50 dark:bg-slate-900' : 'border-transparent text-slate-500 dark:text-slate-400 font-medium hover:text-on-surface hover:bg-slate-50 dark:hover:bg-slate-900/50'; ?> transition-all duration-300 ease-in-out">
+            <span class="material-symbols-outlined mr-3 <?php echo $is_product_active ? 'text-[#EE4D2D]' : ''; ?>">inventory_2</span>
+            <span class="font-manrope font-medium text-sm tracking-wide">Product</span>
         </a>
     </nav>
     

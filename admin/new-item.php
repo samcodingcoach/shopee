@@ -479,14 +479,14 @@ if (!empty($attributes)) {
                     <div class="relative group">
                         <div class="flex items-center gap-3 mb-2">
                             <span class="w-8 h-8 rounded-full <?php echo $step >= 3 ? 'bg-primary text-white ring-4 ring-primary-fixed' : 'bg-surface-container-high text-on-surface-variant'; ?> flex items-center justify-center text-xs font-bold">03</span>
-                            <span class="text-sm font-semibold <?php echo $step >= 3 ? 'text-primary' : 'text-secondary'; ?>">Select Pengiriman</span>
+                            <span class="text-sm font-semibold <?php echo $step >= 3 ? 'text-primary' : 'text-secondary'; ?>">Select Courier</span>
                         </div>
                         <div class="h-1.5 w-full <?php echo $step > 3 ? 'bg-primary' : ($step == 3 ? 'bg-primary' : 'bg-surface-container-high'); ?> rounded-full"></div>
                     </div>
                     <div class="relative group">
                         <div class="flex items-center gap-3 mb-2">
                             <span class="w-8 h-8 rounded-full <?php echo $step >= 4 ? 'bg-primary text-white ring-4 ring-primary-fixed' : 'bg-surface-container-high text-on-surface-variant'; ?> flex items-center justify-center text-xs font-bold">04</span>
-                            <span class="text-sm font-semibold <?php echo $step >= 4 ? 'text-primary' : 'text-secondary'; ?>">Detail Product</span>
+                            <span class="text-sm font-semibold <?php echo $step >= 4 ? 'text-primary' : 'text-secondary'; ?>">Product Details</span>
                         </div>
                         <div class="h-1.5 w-full <?php echo $step >= 4 ? 'bg-primary' : 'bg-surface-container-high'; ?> rounded-full"></div>
                     </div>
