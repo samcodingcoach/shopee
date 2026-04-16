@@ -503,7 +503,7 @@ if (!empty($attributes)) {
                                     <div class="space-y-3">
                                         <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Pilih App <span class="text-primary">*</span></label>
                                         <div class="relative">
-                                            <select name="id_app" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20 appearance-none" required>
+                                            <select name="id_app" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20 appearance-none bg-none" required>
                                                 <option value="">-- Pilih Aplikasi --</option>
                                                 <?php foreach ($apps as $app): ?>
                                                     <option value="<?php echo $app['id_app']; ?>" <?php echo (isset($_POST['id_app']) && $_POST['id_app'] == $app['id_app']) ? 'selected' : ''; ?>>
@@ -580,7 +580,7 @@ if (!empty($attributes)) {
                                     <div class="space-y-3">
                                         <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Pilih Kategori <span class="text-primary">*</span></label>
                                         <div class="relative">
-                                            <select name="category_id" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20 appearance-none" required>
+                                            <select name="category_id" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20 appearance-none bg-none" required>
                                                 <option value="">-- Pilih Kategori --</option>
                                                 <?php foreach ($categories as $cat): ?>
                                                     <option value="<?php echo htmlspecialchars($cat['category_id']); ?>" <?php echo ($category_id == $cat['category_id']) ? 'selected' : ''; ?>>
@@ -709,7 +709,7 @@ if (!empty($attributes)) {
                                     <div class="space-y-3">
                                         <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Condition</label>
                                         <div class="relative">
-                                            <select name="condition" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20 appearance-none">
+                                            <select name="condition" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20 appearance-none bg-none">
                                                 <option value="NEW" <?php echo ($form_data['condition'] ?? 'NEW') == 'NEW' ? 'selected' : ''; ?>>NEW</option>
                                                 <option value="USED" <?php echo ($form_data['condition'] ?? '') == 'USED' ? 'selected' : ''; ?>>USED</option>
                                             </select>
@@ -719,7 +719,7 @@ if (!empty($attributes)) {
                                     <div class="space-y-3">
                                         <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Status</label>
                                         <div class="relative">
-                                            <select name="item_status" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20 appearance-none">
+                                            <select name="item_status" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20 appearance-none bg-none">
                                                 <option value="NORMAL" <?php echo ($form_data['item_status'] ?? 'NORMAL') == 'NORMAL' ? 'selected' : ''; ?>>NORMAL</option>
                                                 <option value="UNLIST" <?php echo ($form_data['item_status'] ?? '') == 'UNLIST' ? 'selected' : ''; ?>>UNLIST</option>
                                             </select>
@@ -781,7 +781,7 @@ if (!empty($attributes)) {
                                                 </label>
                                                 <?php if (!empty($attr['attribute_value_list'])): ?>
                                                     <div class="relative">
-                                                        <select name="attributes[<?php echo $attr['attribute_id']; ?>]" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20 appearance-none" <?php echo $is_req ? 'required' : ''; ?>>
+                                                        <select name="attributes[<?php echo $attr['attribute_id']; ?>]" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20 appearance-none bg-none" <?php echo $is_req ? 'required' : ''; ?>>
                                                             <option value="">-- Pilih --</option>
                                                             <?php foreach ($attr['attribute_value_list'] as $val): ?>
                                                                 <?php $vName = $val['display_value_name'] ?? $val['name'] ?? 'Opsi'; ?>
