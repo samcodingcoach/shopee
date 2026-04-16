@@ -345,489 +345,472 @@ if (!empty($attributes)) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html class="light" lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Tambah Produk - Shopee Admin</title>
-    <link rel="stylesheet" href="css/admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#c2e8ff",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#76d1ff",
+                        "on-error": "#ffffff",
+                        "secondary": "#5b5e66",
+                        "outline": "#8f7069",
+                        "outline-variant": "#e3beb6",
+                        "on-secondary-fixed-variant": "#43474e",
+                        "surface": "#f9f9f9",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#007ea7",
+                        "on-secondary-container": "#61646c",
+                        "inverse-primary": "#ffb4a4",
+                        "on-surface": "#1a1c1c",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#8d1600",
+                        "primary-fixed": "#ffdad3",
+                        "secondary-container": "#dfe2eb",
+                        "inverse-surface": "#2f3131",
+                        "surface-variant": "#e2e2e2",
+                        "on-tertiary-fixed": "#001e2c",
+                        "on-primary-fixed": "#3e0500",
+                        "on-background": "#1a1c1c",
+                        "background": "#f9f9f9",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#fffbff",
+                        "tertiary": "#006385",
+                        "surface-container-high": "#e8e8e8",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-surface-variant": "#5b403b",
+                        "primary-fixed-dim": "#ffb4a4",
+                        "surface-container": "#eeeeee",
+                        "secondary-fixed": "#dfe2eb",
+                        "on-tertiary-fixed-variant": "#004d67",
+                        "error-container": "#ffdad6",
+                        "surface-tint": "#b62506",
+                        "on-secondary-fixed": "#181c22",
+                        "inverse-on-surface": "#f1f1f1",
+                        "secondary-fixed-dim": "#c3c6cf",
+                        "surface-dim": "#dadada",
+                        "primary": "#EE4D2D",
+                        "surface-container-low": "#f3f3f3",
+                        "surface-bright": "#f9f9f9",
+                        "primary-container": "#d63c1e",
+                        "on-tertiary-container": "#fbfcff",
+                        "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        .form-step {
-            display: none;
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
-        .form-step.active {
-            display: block;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-            font-size: 14px;
-        }
-        .form-label .required {
-            color: #ee4d2d;
-            margin-left: 4px;
-        }
-        .form-input,
-        .form-select,
-        .form-textarea {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #d9d9d9;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-        .form-input:focus,
-        .form-select:focus,
-        .form-textarea:focus {
-            outline: none;
-            border-color: #ee4d2d;
-            box-shadow: 0 0 0 2px rgba(238, 77, 45, 0.1);
-        }
-        .form-textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-        .form-input[readonly] {
-            background: #fafafa;
-            cursor: not-allowed;
-        }
-        .form-help {
-            margin-top: 6px;
-            font-size: 12px;
-            color: #8c8c8c;
-        }
-        .form-section {
-            margin-top: 32px;
-            padding-top: 24px;
-            border-top: 1px solid #e8e8e8;
-        }
-        .form-section-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 20px;
-        }
-        .step-indicator {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 32px;
-            padding: 20px;
-            background: #fafafa;
-            border-radius: 8px;
-        }
-        .step-item {
-            flex: 1;
-            text-align: center;
-            position: relative;
-        }
-        .step-number {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #e8e8e8;
-            color: #8c8c8c;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        .step-item.active .step-number {
-            background: #ee4d2d;
-            color: white;
-        }
-        .step-item.completed .step-number {
-            background: #52c41a;
-            color: white;
-        }
-        .step-label {
-            font-size: 12px;
-            color: #8c8c8c;
-        }
-        .step-item.active .step-label {
-            color: #ee4d2d;
-            font-weight: 600;
-        }
-        .logistic-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .logistic-table th,
-        .logistic-table td {
-            padding: 12px 16px;
-            text-align: left;
-            border-bottom: 1px solid #e8e8e8;
-        }
-        .logistic-table th {
-            background: #fafafa;
-            font-weight: 600;
-            font-size: 13px;
-            text-transform: uppercase;
-        }
-        .logistic-table tr:hover {
-            background: #fafafa;
-            cursor: pointer;
-        }
-        .logistic-table input[type="radio"] {
-            cursor: pointer;
-        }
-        .success-box {
-            background: #f6ffed;
-            border: 1px solid #b7eb8f;
-            border-radius: 8px;
-            padding: 24px;
-            text-align: center;
-            margin: 32px 0;
-        }
-        .success-icon {
-            font-size: 64px;
-            margin-bottom: 16px;
-        }
-        .success-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #52c41a;
-            margin-bottom: 8px;
-        }
-        .success-message {
-            color: #666;
-            margin-bottom: 24px;
+        .step-active {
+            color: #EE4D2D;
         }
     </style>
 </head>
-<body class="admin-body">
+<body class="bg-surface font-body text-on-surface">
     <?php include 'navbar.php'; ?>
 
-    <main class="admin-main">
-        <div class="admin-topbar" style="margin: 0;">
-            <h1 class="admin-topbar-title">Tambah Produk Baru</h1>
-        </div>
+    <main class="ml-64 pt-12 px-8 pb-12 min-h-screen bg-surface">
+        <div class="max-w-5xl mx-auto">
+            <!-- Header Section -->
+            <header class="mb-10">
+                <h1 class="font-headline text-4xl font-extrabold text-on-surface tracking-tight mb-2">Create New Product</h1>
+                <p class="text-secondary font-medium uppercase tracking-[0.1em] text-xs">Product Management &bull; Step-by-Step Curation</p>
+            </header>
 
-        <div class="admin-content" style="margin: 0;">
             <?php if ($success_message): ?>
-                <div class="success-box">
-                    <div class="success-icon">✅</div>
-                    <div class="success-title">Berhasil!</div>
-                    <div class="success-message"><?php echo htmlspecialchars($success_message); ?></div>
-                    <a href="item.php" class="btn btn-orange">
-                        ← Kembali ke Daftar Produk
+                <div class="bg-[#f6ffed] border border-[#b7eb8f] rounded-xl p-8 text-center mb-8 shadow-sm">
+                    <div class="text-6xl mb-4">✅</div>
+                    <div class="text-xl font-semibold text-[#52c41a] mb-2">Berhasil!</div>
+                    <div class="text-[#666] mb-6"><?php echo htmlspecialchars($success_message); ?></div>
+                    <a href="item.php" class="px-8 py-3 bg-gradient-to-br from-primary to-primary-container text-white font-bold uppercase tracking-widest text-xs rounded-lg shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all inline-block">
+                        &larr; Kembali ke Daftar Produk
                     </a>
                 </div>
             <?php else: ?>
                 <?php if ($error_message): ?>
-                    <div class="error-message" style="margin-bottom: 20px;">
-                        <span>⚠️</span>
-                        <span><?php echo htmlspecialchars($error_message); ?></span>
+                    <div class="bg-[#fff2f0] border border-[#ffccc7] rounded-lg p-4 mb-8 flex items-center gap-3 text-[#ff4d4f]">
+                        <span class="material-symbols-outlined">error</span>
+                        <span class="font-medium text-sm"><?php echo htmlspecialchars($error_message); ?></span>
                     </div>
                 <?php endif; ?>
 
-                <div class="admin-card">
-                    <div class="admin-card-header">
-                        <h2 class="admin-card-title">Form Tambah Produk</h2>
-                    </div>
-
-                    <div class="admin-card-body" style="padding: 24px;">
-                        <!-- Step Indicator -->
-                        <div class="step-indicator">
-                            <div class="step-item <?php echo $step >= 1 ? ($step > 1 ? 'completed' : 'active') : ''; ?>">
-                                <div class="step-number"><?php echo $step > 1 ? '✓' : '1'; ?></div>
-                                <div class="step-label">Upload Gambar</div>
-                            </div>
-                            <div class="step-item <?php echo $step >= 2 ? ($step > 2 ? 'completed' : 'active') : ''; ?>">
-                                <div class="step-number"><?php echo $step > 2 ? '✓' : '2'; ?></div>
-                                <div class="step-label">Pilih Kategori</div>
-                            </div>
-                            <div class="step-item <?php echo $step >= 3 ? ($step > 3 ? 'completed' : 'active') : ''; ?>">
-                                <div class="step-number"><?php echo $step > 3 ? '✓' : '3'; ?></div>
-                                <div class="step-label">Pilih Kurir</div>
-                            </div>
-                            <div class="step-item <?php echo $step >= 4 ? 'active' : ''; ?>">
-                                <div class="step-number">4</div>
-                                <div class="step-label">Isi Detail</div>
-                            </div>
+                <!-- Stepper Indicator -->
+                <div class="grid grid-cols-4 gap-4 mb-12">
+                    <div class="relative group">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="w-8 h-8 rounded-full <?php echo $step >= 1 ? 'bg-primary text-white ring-4 ring-primary-fixed' : 'bg-surface-container-high text-on-surface-variant'; ?> flex items-center justify-center text-xs font-bold">01</span>
+                            <span class="text-sm font-semibold <?php echo $step >= 1 ? 'text-primary' : 'text-secondary'; ?>">Upload Image</span>
                         </div>
+                        <div class="h-1.5 w-full <?php echo $step > 1 ? 'bg-primary' : ($step == 1 ? 'bg-primary' : 'bg-surface-container-high'); ?> rounded-full"></div>
+                    </div>
+                    <div class="relative group">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="w-8 h-8 rounded-full <?php echo $step >= 2 ? 'bg-primary text-white ring-4 ring-primary-fixed' : 'bg-surface-container-high text-on-surface-variant'; ?> flex items-center justify-center text-xs font-bold">02</span>
+                            <span class="text-sm font-semibold <?php echo $step >= 2 ? 'text-primary' : 'text-secondary'; ?>">Select Category</span>
+                        </div>
+                        <div class="h-1.5 w-full <?php echo $step > 2 ? 'bg-primary' : ($step == 2 ? 'bg-primary' : 'bg-surface-container-high'); ?> rounded-full"></div>
+                    </div>
+                    <div class="relative group">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="w-8 h-8 rounded-full <?php echo $step >= 3 ? 'bg-primary text-white ring-4 ring-primary-fixed' : 'bg-surface-container-high text-on-surface-variant'; ?> flex items-center justify-center text-xs font-bold">03</span>
+                            <span class="text-sm font-semibold <?php echo $step >= 3 ? 'text-primary' : 'text-secondary'; ?>">Select Pengiriman</span>
+                        </div>
+                        <div class="h-1.5 w-full <?php echo $step > 3 ? 'bg-primary' : ($step == 3 ? 'bg-primary' : 'bg-surface-container-high'); ?> rounded-full"></div>
+                    </div>
+                    <div class="relative group">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="w-8 h-8 rounded-full <?php echo $step >= 4 ? 'bg-primary text-white ring-4 ring-primary-fixed' : 'bg-surface-container-high text-on-surface-variant'; ?> flex items-center justify-center text-xs font-bold">04</span>
+                            <span class="text-sm font-semibold <?php echo $step >= 4 ? 'text-primary' : 'text-secondary'; ?>">Detail Product</span>
+                        </div>
+                        <div class="h-1.5 w-full <?php echo $step >= 4 ? 'bg-primary' : 'bg-surface-container-high'; ?> rounded-full"></div>
+                    </div>
+                </div>
 
-                        <!-- Step 1: Upload Image -->
-                        <?php if ($step === 1): ?>
-                        <form method="POST" enctype="multipart/form-data">
-                            <div class="form-group">
-                                <label class="form-label">
-                                    Pilih Aplikasi <span class="required">*</span>
-                                </label>
-                                <select name="id_app" class="form-select" required>
-                                    <option value="">-- Pilih Aplikasi --</option>
-                                    <?php foreach ($apps as $app): ?>
-                                        <option value="<?php echo $app['id_app']; ?>" <?php echo (isset($_POST['id_app']) && $_POST['id_app'] == $app['id_app']) ? 'selected' : ''; ?>>
-                                            <?php echo htmlspecialchars($app['nama_app']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">
-                                    Gambar Produk (JPG, maks 1MB) <span class="required">*</span>
-                                </label>
-                                <input type="file" name="image" accept=".jpg,.jpeg" class="form-input" required>
-                                <div class="form-help">Format: JPG, Maksimal ukuran: 1MB</div>
-                            </div>
-
-                            <div style="margin-top: 24px;">
-                                <button type="submit" name="upload_image" class="btn btn-orange">
-                                    Upload Gambar →
-                                </button>
-                            </div>
-                        </form>
-                        <?php endif; ?>
-
-                        <!-- Step 2: Select Category -->
-                        <?php if ($step === 2): ?>
-                        <form method="POST">
-                            <input type="hidden" name="image_id" value="<?php echo htmlspecialchars($image_id); ?>">
-                            <input type="hidden" name="id_app" value="<?php echo htmlspecialchars($_POST['id_app_hidden'] ?? ''); ?>">
-
-                            <div class="form-group">
-                                <label class="form-label">Image ID</label>
-                                <input type="text" value="<?php echo htmlspecialchars($image_id); ?>" class="form-input" readonly>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">
-                                    Pilih Kategori <span class="required">*</span>
-                                </label>
-                                <select name="category_id" class="form-select" required>
-                                    <option value="">-- Pilih Kategori --</option>
-                                    <?php foreach ($categories as $cat): ?>
-                                        <option value="<?php echo htmlspecialchars($cat['category_id']); ?>" <?php echo ($category_id == $cat['category_id']) ? 'selected' : ''; ?>>
-                                            <?php echo htmlspecialchars($cat['display_category_name']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-
-                            <div style="margin-top: 24px;">
-                                <button type="submit" name="select_category" class="btn btn-orange">
-                                    Pilih Kategori →
-                                </button>
-                            </div>
-                        </form>
-                        <?php endif; ?>
-
-                        <!-- Step 3: Select Logistics -->
-                        <?php if ($step === 3): ?>
-                        <form method="POST">
-                            <input type="hidden" name="image_id" value="<?php echo htmlspecialchars($image_id); ?>">
-                            <input type="hidden" name="category_id" value="<?php echo htmlspecialchars($category_id); ?>">
-                            <input type="hidden" name="id_app" value="<?php echo htmlspecialchars($_POST['id_app'] ?? ''); ?>">
-
-                            <div class="form-group">
-                                <label class="form-label">Image ID</label>
-                                <input type="text" value="<?php echo htmlspecialchars($image_id); ?>" class="form-input" readonly>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Category ID</label>
-                                <input type="text" value="<?php echo htmlspecialchars($category_id); ?>" class="form-input" readonly>
-                            </div>
-
-                            <?php if (!empty($logistics)): ?>
-                            <div class="form-section">
-                                <h3 class="form-section-title">Pilih Kurir Logistik</h3>
-                                <table class="logistic-table">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 50px;">Pilih</th>
-                                            <th>Logistic ID</th>
-                                            <th>Nama Kurir</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($logistics as $logistic):
-                                            $logistic_id = $logistic['logistics_channel_id'] ?? ($logistic['logistic_id'] ?? ($logistic['channel_id'] ?? 'N/A'));
-                                            $logistic_name = $logistic['logistics_channel_name'] ?? ($logistic['logistic_name'] ?? ($logistic['name'] ?? '-'));
-                                        ?>
-                                            <tr onclick="this.querySelector('input[type=radio]').checked = true; document.getElementById('hidden_logistic_id').value = '<?php echo htmlspecialchars($logistic_id); ?>';">
-                                                <td>
-                                                    <input type="radio" name="logistic_radio" value="<?php echo htmlspecialchars($logistic_id); ?>"
-                                                           onclick="document.getElementById('hidden_logistic_id').value = this.value;"
-                                                           <?php echo ($selected_logistic == $logistic_id) ? 'checked' : ''; ?>>
-                                                </td>
-                                                <td><?php echo htmlspecialchars($logistic_id); ?></td>
-                                                <td><?php echo htmlspecialchars($logistic_name); ?></td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-                                <input type="hidden" id="hidden_logistic_id" name="logistic_id" value="<?php echo htmlspecialchars($selected_logistic); ?>">
-                            </div>
-                            <?php endif; ?>
-
-                            <div style="margin-top: 24px;">
-                                <button type="submit" name="select_logistic" class="btn btn-orange">
-                                    Lanjut ke Detail Produk →
-                                </button>
-                            </div>
-                        </form>
-                        <?php endif; ?>
-
-                        <!-- Step 4: Product Details -->
-                        <?php if ($step === 4): ?>
-                        <form method="POST">
-                            <input type="hidden" name="image_id" value="<?php echo htmlspecialchars($image_id); ?>">
-                            <input type="hidden" name="category_id" value="<?php echo htmlspecialchars($category_id); ?>">
-                            <input type="hidden" name="id_app" value="<?php echo htmlspecialchars($_POST['id_app'] ?? ''); ?>">
-                            <input type="hidden" name="logistic_id" value="<?php echo htmlspecialchars($selected_logistic); ?>">
-
-                            <div class="form-group">
-                                <label class="form-label">
-                                    Nama Produk <span class="required">*</span>
-                                </label>
-                                <input type="text" name="item_name" class="form-input" required value="<?php echo htmlspecialchars($form_data['item_name'] ?? ''); ?>" placeholder="Contoh: Laptop Gaming Pro 15">
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">
-                                    Harga Asli (Rp) <span class="required">*</span>
-                                </label>
-                                <input type="number" name="original_price" class="form-input" required placeholder="Contoh: 350000" value="<?php echo htmlspecialchars($form_data['original_price'] ?? ''); ?>">
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">
-                                    Deskripsi Produk <span class="required">*</span>
-                                </label>
-                                <textarea name="description" class="form-textarea" required placeholder="Jelaskan detail produk, spesifikasi, dan keunggulan..."><?php echo htmlspecialchars($form_data['description'] ?? ''); ?></textarea>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">
-                                    Berat (kg) <span class="required">*</span>
-                                </label>
-                                <input type="number" step="0.01" name="weight" class="form-input" required placeholder="Contoh: 0.3" value="<?php echo htmlspecialchars($form_data['weight'] ?? ''); ?>">
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Status Produk</label>
-                                <select name="item_status" class="form-select">
-                                    <option value="NORMAL" <?php echo ($form_data['item_status'] ?? 'NORMAL') == 'NORMAL' ? 'selected' : ''; ?>>NORMAL (Aktif)</option>
-                                    <option value="UNLIST" <?php echo ($form_data['item_status'] ?? '') == 'UNLIST' ? 'selected' : ''; ?>>UNLIST (Tidak Aktif)</option>
-                                </select>
-                            </div>
-
-                            <div class="form-section">
-                                <h3 class="form-section-title">Informasi Tambahan</h3>
-
-                                <div class="form-group">
-                                    <label class="form-label">SKU Produk</label>
-                                    <input type="text" name="item_sku" class="form-input" placeholder="Contoh: JAM-PRIA-001" value="<?php echo htmlspecialchars($form_data['item_sku'] ?? ''); ?>">
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="form-label">Kondisi Produk</label>
-                                    <select name="condition" class="form-select">
-                                        <option value="NEW" <?php echo ($form_data['condition'] ?? 'NEW') == 'NEW' ? 'selected' : ''; ?>>Baru (NEW)</option>
-                                        <option value="USED" <?php echo ($form_data['condition'] ?? '') == 'USED' ? 'selected' : ''; ?>>Bekas (USED)</option>
-                                    </select>
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="form-label">
-                                        Stok <span class="required">*</span>
-                                    </label>
-                                    <input type="number" name="stock" class="form-input" required value="<?php echo htmlspecialchars($form_data['stock'] ?? '50'); ?>">
-                                </div>
-                            </div>
-
-                            <div class="form-section">
-                                <h3 class="form-section-title">Grosir (Opsional)</h3>
-                                <p class="form-help" style="margin-bottom: 16px;">Harga grosir harus antara 50% - 99% dari harga asli. Kosongkan untuk menonaktifkan grosir.</p>
-
-                                <div class="form-group">
-                                    <label class="form-label">Minimum Pembelian Grosir</label>
-                                    <input type="number" name="wholesale_min" class="form-input" value="<?php echo htmlspecialchars($form_data['wholesale_min'] ?? '10'); ?>">
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="form-label">Maksimum Pembelian Grosir</label>
-                                    <input type="number" name="wholesale_max" class="form-input" value="<?php echo htmlspecialchars($form_data['wholesale_max'] ?? '10'); ?>">
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="form-label">Harga Grosir per Unit</label>
-                                    <input type="number" name="wholesale_price" class="form-input" placeholder="Contoh: 175000" value="<?php echo htmlspecialchars($form_data['wholesale_price'] ?? ''); ?>">
-                                </div>
-                            </div>
-
-                            <div class="form-section">
-                                <h3 class="form-section-title">Dimensi Paket</h3>
-
-                                <div class="form-group">
-                                    <label class="form-label">Tinggi Paket (cm)</label>
-                                    <input type="number" name="package_height" class="form-input" value="<?php echo htmlspecialchars($form_data['package_height'] ?? '10'); ?>">
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="form-label">Panjang Paket (cm)</label>
-                                    <input type="number" name="package_length" class="form-input" value="<?php echo htmlspecialchars($form_data['package_length'] ?? '15'); ?>">
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="form-label">Lebar Paket (cm)</label>
-                                    <input type="number" name="package_width" class="form-input" value="<?php echo htmlspecialchars($form_data['package_width'] ?? '10'); ?>">
-                                </div>
-                            </div>
-
-                            <?php if (!empty($attributes)): ?>
-                            <div class="form-section">
-                                <h3 class="form-section-title">Atribut Kategori</h3>
-                                <p class="form-help" style="margin-bottom: 16px;">Isi atribut yang ditandai bintang merah (*). Kosongkan yang tidak perlu.</p>
-
-                                <?php foreach ($attributes as $attr): ?>
-                                    <?php
-                                    $is_req = ($attr['is_mandatory'] ?? false) ? true : false;
-                                    $display_name = $attr['display_attribute_name'] ?? $attr['name'] ?? 'Atribut';
-                                    ?>
-                                    <div class="form-group">
-                                        <label class="form-label">
-                                            <?php echo htmlspecialchars($display_name); ?>
-                                            <?php echo $is_req ? '<span class="required">*</span>' : ''; ?>
-                                        </label>
-
-                                        <?php if (!empty($attr['attribute_value_list'])): ?>
-                                            <select name="attributes[<?php echo $attr['attribute_id']; ?>]" class="form-select" <?php echo $is_req ? 'required' : ''; ?>>
-                                                <option value="">-- Pilih --</option>
-                                                <?php foreach ($attr['attribute_value_list'] as $val): ?>
-                                                    <?php $vName = $val['display_value_name'] ?? $val['name'] ?? 'Opsi'; ?>
-                                                    <option value="<?php echo $val['value_id'] . '|' . htmlspecialchars($vName); ?>"
-                                                        <?php echo ($form_data['attributes'][$attr['attribute_id']] ?? '') == ($val['value_id'] . '|' . $vName) ? 'selected' : ''; ?>>
-                                                        <?php echo htmlspecialchars($vName); ?>
+                <!-- Bento Form Content -->
+                <div class="grid grid-cols-12">
+                    <div class="col-span-12 lg:col-span-12 space-y-6">
+                        <div class="bg-surface-container-lowest p-8 rounded-xl shadow-[0_12px_32px_-4px_rgba(26,28,28,0.06)] border border-outline-variant/10">
+                            
+                            <?php if ($step === 1): ?>
+                            <form method="POST" enctype="multipart/form-data">
+                                <div class="space-y-8">
+                                    <div class="space-y-3">
+                                        <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Pilih App <span class="text-primary">*</span></label>
+                                        <div class="relative">
+                                            <select name="id_app" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20 appearance-none" required>
+                                                <option value="">-- Pilih Aplikasi --</option>
+                                                <?php foreach ($apps as $app): ?>
+                                                    <option value="<?php echo $app['id_app']; ?>" <?php echo (isset($_POST['id_app']) && $_POST['id_app'] == $app['id_app']) ? 'selected' : ''; ?>>
+                                                        <?php echo htmlspecialchars($app['nama_app']); ?>
                                                     </option>
                                                 <?php endforeach; ?>
                                             </select>
-                                        <?php else: ?>
-                                            <input type="text" name="attributes[<?php echo $attr['attribute_id']; ?>]" class="form-input" <?php echo $is_req ? 'required' : ''; ?>
-                                                   value="<?php echo htmlspecialchars($form_data['attributes'][$attr['attribute_id']] ?? ''); ?>"
-                                                   placeholder="Masukkan <?php echo htmlspecialchars($display_name); ?>">
-                                        <?php endif; ?>
+                                            <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">expand_more</span>
+                                        </div>
                                     </div>
-                                <?php endforeach; ?>
-                            </div>
+                                    <div class="space-y-4">
+                                        <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Upload Image <span class="text-primary">*</span></label>
+                                        <div class="border-2 border-dashed border-outline-variant/30 rounded-xl p-12 flex flex-col items-center justify-center bg-surface-container-lowest hover:bg-primary-fixed/10 transition-colors duration-300 group relative overflow-hidden" id="upload-container">
+                                            <input type="file" name="image" id="image-upload-input" accept=".jpg,.jpeg" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" required>
+                                            
+                                            <!-- Default State -->
+                                            <div id="upload-placeholder" class="flex flex-col items-center pointer-events-none">
+                                                <div class="w-16 h-16 rounded-full bg-surface-container-low flex items-center justify-center mb-4 group-hover:bg-primary/10 transition-colors">
+                                                    <span class="material-symbols-outlined text-primary text-3xl">cloud_upload</span>
+                                                </div>
+                                                <h4 class="text-on-surface font-semibold mb-1">Click to upload image</h4>
+                                                <p class="text-secondary text-sm mb-6">Support JPG, JPEG (Max 1MB)</p>
+                                                <button type="button" class="px-6 py-2.5 bg-primary text-white font-semibold rounded-lg shadow-lg shadow-primary/20 hover:primary-container active:scale-95 transition-all text-sm">
+                                                    Browse Image
+                                                </button>
+                                            </div>
+
+                                            <!-- Preview State -->
+                                            <img id="image-preview" class="absolute inset-0 w-full h-full object-contain hidden z-0 bg-surface-container-lowest" />
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-end pt-6">
+                                        <button type="submit" name="upload_image" class="px-10 py-3 bg-gradient-to-br from-primary to-primary-container text-white font-bold uppercase tracking-widest text-xs rounded-lg shadow-xl shadow-primary/20 active:scale-95 transition-all">
+                                            Upload & Selanjutnya &rarr;
+                                        </button>
+                                    </div>
+                                </div>
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        const input = document.getElementById('image-upload-input');
+                                        if(input) {
+                                            input.addEventListener('change', function(event) {
+                                                const file = event.target.files[0];
+                                                if (file) {
+                                                    const reader = new FileReader();
+                                                    reader.onload = function(e) {
+                                                        const preview = document.getElementById('image-preview');
+                                                        const placeholder = document.getElementById('upload-placeholder');
+                                                        preview.src = e.target.result;
+                                                        preview.classList.remove('hidden');
+                                                        placeholder.classList.add('hidden');
+                                                    }
+                                                    reader.readAsDataURL(file);
+                                                }
+                                            });
+                                        }
+                                    });
+                                </script>
+                                </div>
+                            </form>
                             <?php endif; ?>
 
-                            <div style="margin-top: 32px; display: flex; gap: 12px;">
-                                <button type="submit" name="create_product" class="btn btn-orange" style="flex: 1;">
-                                    ✓ Buat Produk
-                                </button>
-                            </div>
-                        </form>
-                        <?php endif; ?>
+                            <?php if ($step === 2): ?>
+                            <form method="POST">
+                                <input type="hidden" name="image_id" value="<?php echo htmlspecialchars($image_id); ?>">
+                                <input type="hidden" name="id_app_hidden" value="<?php echo htmlspecialchars($_POST['id_app_hidden'] ?? ''); ?>">
+                                <input type="hidden" name="id_app" value="<?php echo htmlspecialchars($_POST['id_app_hidden'] ?? ''); ?>">
 
+                                <div class="space-y-6">
+                                    <div class="space-y-3">
+                                        <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Image ID</label>
+                                        <input type="text" value="<?php echo htmlspecialchars($image_id); ?>" class="w-full h-12 bg-surface-container-high border-0 rounded-lg px-4 font-body text-secondary" readonly>
+                                    </div>
+                                    <div class="space-y-3">
+                                        <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Pilih Kategori <span class="text-primary">*</span></label>
+                                        <div class="relative">
+                                            <select name="category_id" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20 appearance-none" required>
+                                                <option value="">-- Pilih Kategori --</option>
+                                                <?php foreach ($categories as $cat): ?>
+                                                    <option value="<?php echo htmlspecialchars($cat['category_id']); ?>" <?php echo ($category_id == $cat['category_id']) ? 'selected' : ''; ?>>
+                                                        <?php echo htmlspecialchars($cat['display_category_name']); ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                            <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">category</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-end pt-6">
+                                        <button type="submit" name="select_category" class="px-10 py-3 bg-gradient-to-br from-primary to-primary-container text-white font-bold uppercase tracking-widest text-xs rounded-lg shadow-xl shadow-primary/20 active:scale-95 transition-all">
+                                            Selanjutnya &rarr;
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                            <?php endif; ?>
+
+                            <?php if ($step === 3): ?>
+                            <form method="POST">
+                                <input type="hidden" name="image_id" value="<?php echo htmlspecialchars($image_id); ?>">
+                                <input type="hidden" name="category_id" value="<?php echo htmlspecialchars($category_id); ?>">
+                                <input type="hidden" name="id_app" value="<?php echo htmlspecialchars($_POST['id_app'] ?? ''); ?>">
+
+                                <div class="space-y-6">
+                                    <div class="grid grid-cols-2 gap-6">
+                                        <div class="space-y-3">
+                                            <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Image ID</label>
+                                            <input type="text" value="<?php echo htmlspecialchars($image_id); ?>" class="w-full h-12 bg-surface-container-high border-0 rounded-lg px-4 font-body text-secondary" readonly>
+                                        </div>
+                                        <div class="space-y-3">
+                                            <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Category ID</label>
+                                            <input type="text" value="<?php echo htmlspecialchars($category_id); ?>" class="w-full h-12 bg-surface-container-high border-0 rounded-lg px-4 font-body text-secondary" readonly>
+                                        </div>
+                                    </div>
+
+                                    <?php if (!empty($logistics)): ?>
+                                    <div class="space-y-3">
+                                        <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Pilih Pengiriman</label>
+                                        <div class="overflow-hidden rounded-xl border border-surface-container-high">
+                                            <table class="w-full text-left border-collapse">
+                                                <thead class="bg-surface-container-low">
+                                                    <tr>
+                                                        <th class="px-6 py-4 text-xs font-bold text-secondary uppercase tracking-wider">Pilih</th>
+                                                        <th class="px-6 py-4 text-xs font-bold text-secondary uppercase tracking-wider">Logistic ID</th>
+                                                        <th class="px-6 py-4 text-xs font-bold text-secondary uppercase tracking-wider">Nama Kurir</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-surface-container-low">
+                                                    <?php foreach ($logistics as $logistic):
+                                                        $logistic_id = $logistic['logistics_channel_id'] ?? ($logistic['logistic_id'] ?? ($logistic['channel_id'] ?? 'N/A'));
+                                                        $logistic_name = $logistic['logistics_channel_name'] ?? ($logistic['logistic_name'] ?? ($logistic['name'] ?? '-'));
+                                                    ?>
+                                                    <tr class="hover:bg-surface-container-lowest transition-colors cursor-pointer" onclick="document.getElementById('logistic_<?php echo htmlspecialchars($logistic_id); ?>').checked = true; document.getElementById('hidden_logistic_id').value = '<?php echo htmlspecialchars($logistic_id); ?>';">
+                                                        <td class="px-6 py-4">
+                                                            <input id="logistic_<?php echo htmlspecialchars($logistic_id); ?>" class="w-4 h-4 text-primary focus:ring-primary border-outline-variant" name="logistic_radio" type="radio" value="<?php echo htmlspecialchars($logistic_id); ?>" onclick="document.getElementById('hidden_logistic_id').value = this.value;" <?php echo ($selected_logistic == $logistic_id) ? 'checked' : ''; ?> />
+                                                        </td>
+                                                        <td class="px-6 py-4 font-mono text-sm">#<?php echo htmlspecialchars($logistic_id); ?></td>
+                                                        <td class="px-6 py-4">
+                                                            <div class="flex items-center gap-3">
+                                                                <div class="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center text-xs font-bold text-primary">
+                                                                    <?php echo substr(strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $logistic_name)), 0, 2); ?>
+                                                                </div>
+                                                                <span class="font-medium"><?php echo htmlspecialchars($logistic_name); ?></span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <input type="hidden" id="hidden_logistic_id" name="logistic_id" value="<?php echo htmlspecialchars($selected_logistic); ?>">
+                                    </div>
+                                    <?php else: ?>
+                                    <div class="bg-[#fff2f0] border border-[#ffccc7] rounded-lg p-4 text-[#ff4d4f] flex items-center gap-3">
+                                        <span class="material-symbols-outlined">info</span>
+                                        <span>Tidak ada data logistik ditemukan untuk toko ini.</span>
+                                    </div>
+                                    <?php endif; ?>
+
+                                    <div class="flex justify-end pt-6">
+                                        <button type="submit" name="select_logistic" class="px-10 py-3 bg-gradient-to-br from-primary to-primary-container text-white font-bold uppercase tracking-widest text-xs rounded-lg shadow-xl shadow-primary/20 active:scale-95 transition-all">
+                                            Selanjutnya &rarr;
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                            <?php endif; ?>
+
+                            <?php if ($step === 4): ?>
+                            <form method="POST">
+                                <input type="hidden" name="image_id" value="<?php echo htmlspecialchars($image_id); ?>">
+                                <input type="hidden" name="category_id" value="<?php echo htmlspecialchars($category_id); ?>">
+                                <input type="hidden" name="id_app" value="<?php echo htmlspecialchars($_POST['id_app'] ?? ''); ?>">
+                                <input type="hidden" name="logistic_id" value="<?php echo htmlspecialchars($selected_logistic); ?>">
+
+                                <div class="grid grid-cols-2 gap-6">
+                                    <div class="col-span-2 space-y-3">
+                                        <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Product Name <span class="text-primary">*</span></label>
+                                        <input type="text" name="item_name" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20" required value="<?php echo htmlspecialchars($form_data['item_name'] ?? ''); ?>" placeholder="e.g. Minimalist Oak Table" />
+                                    </div>
+                                    <div class="space-y-3">
+                                        <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Price (IDR) <span class="text-primary">*</span></label>
+                                        <div class="relative">
+                                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-secondary font-bold text-sm">Rp</span>
+                                            <input type="number" name="original_price" class="w-full h-12 bg-surface-container-low border-0 rounded-lg pl-12 pr-4 font-body focus:ring-2 focus:ring-primary/20" required placeholder="0.00" value="<?php echo htmlspecialchars($form_data['original_price'] ?? ''); ?>" />
+                                        </div>
+                                    </div>
+                                    <div class="space-y-3">
+                                        <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Weight (kg) <span class="text-primary">*</span></label>
+                                        <input type="number" step="0.01" name="weight" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20" required placeholder="e.g. 0.3" value="<?php echo htmlspecialchars($form_data['weight'] ?? ''); ?>" />
+                                    </div>
+                                    <div class="col-span-2 space-y-3">
+                                        <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Description <span class="text-primary">*</span></label>
+                                        <textarea name="description" class="w-full bg-surface-container-low border-0 rounded-lg p-4 font-body focus:ring-2 focus:ring-primary/20 resize-none" required placeholder="Enter product description here..." rows="4"><?php echo htmlspecialchars($form_data['description'] ?? ''); ?></textarea>
+                                    </div>
+                                    <div class="space-y-3">
+                                        <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Stock <span class="text-primary">*</span></label>
+                                        <input type="number" name="stock" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20" required value="<?php echo htmlspecialchars($form_data['stock'] ?? '50'); ?>" />
+                                    </div>
+                                    <div class="space-y-3">
+                                        <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Item SKU</label>
+                                        <input type="text" name="item_sku" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20" placeholder="e.g. SKU-12345" value="<?php echo htmlspecialchars($form_data['item_sku'] ?? ''); ?>" />
+                                    </div>
+                                    <div class="space-y-3">
+                                        <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Condition</label>
+                                        <div class="relative">
+                                            <select name="condition" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20 appearance-none">
+                                                <option value="NEW" <?php echo ($form_data['condition'] ?? 'NEW') == 'NEW' ? 'selected' : ''; ?>>NEW</option>
+                                                <option value="USED" <?php echo ($form_data['condition'] ?? '') == 'USED' ? 'selected' : ''; ?>>USED</option>
+                                            </select>
+                                            <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">expand_more</span>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-3">
+                                        <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Status</label>
+                                        <div class="relative">
+                                            <select name="item_status" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20 appearance-none">
+                                                <option value="NORMAL" <?php echo ($form_data['item_status'] ?? 'NORMAL') == 'NORMAL' ? 'selected' : ''; ?>>NORMAL</option>
+                                                <option value="UNLIST" <?php echo ($form_data['item_status'] ?? '') == 'UNLIST' ? 'selected' : ''; ?>>UNLIST</option>
+                                            </select>
+                                            <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">expand_more</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-8 pt-8 border-t border-surface-container-high grid grid-cols-3 gap-6">
+                                    <div class="col-span-3">
+                                        <h3 class="text-sm font-bold tracking-widest text-secondary uppercase">Wholesale (Grosir)</h3>
+                                        <p class="text-xs text-secondary mt-1">Kosongkan untuk menonaktifkan grosir.</p>
+                                    </div>
+                                    <div class="space-y-3">
+                                        <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Min Qty</label>
+                                        <input type="number" name="wholesale_min" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20" value="<?php echo htmlspecialchars($form_data['wholesale_min'] ?? '10'); ?>" />
+                                    </div>
+                                    <div class="space-y-3">
+                                        <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Max Qty</label>
+                                        <input type="number" name="wholesale_max" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20" value="<?php echo htmlspecialchars($form_data['wholesale_max'] ?? '10'); ?>" />
+                                    </div>
+                                    <div class="space-y-3">
+                                        <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Wholesale Price (Rp)</label>
+                                        <input type="number" name="wholesale_price" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20" value="<?php echo htmlspecialchars($form_data['wholesale_price'] ?? ''); ?>" />
+                                    </div>
+                                </div>
+
+                                <div class="mt-8 pt-8 border-t border-surface-container-high grid grid-cols-3 gap-6">
+                                    <div class="col-span-3">
+                                        <h3 class="text-sm font-bold tracking-widest text-secondary uppercase">Dimensi Paket</h3>
+                                    </div>
+                                    <div class="space-y-3">
+                                        <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Height (cm)</label>
+                                        <input type="number" name="package_height" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20" value="<?php echo htmlspecialchars($form_data['package_height'] ?? '10'); ?>" />
+                                    </div>
+                                    <div class="space-y-3">
+                                        <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Length (cm)</label>
+                                        <input type="number" name="package_length" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20" value="<?php echo htmlspecialchars($form_data['package_length'] ?? '15'); ?>" />
+                                    </div>
+                                    <div class="space-y-3">
+                                        <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Width (cm)</label>
+                                        <input type="number" name="package_width" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20" value="<?php echo htmlspecialchars($form_data['package_width'] ?? '10'); ?>" />
+                                    </div>
+                                </div>
+
+                                <?php if (!empty($attributes)): ?>
+                                <div class="mt-8 pt-8 border-t border-surface-container-high">
+                                    <h3 class="text-sm font-bold tracking-widest text-secondary uppercase mb-6">Atribut Kategori</h3>
+                                    <div class="grid grid-cols-2 gap-6">
+                                        <?php foreach ($attributes as $attr): ?>
+                                            <?php
+                                            $is_req = ($attr['is_mandatory'] ?? false) ? true : false;
+                                            $display_name = $attr['display_attribute_name'] ?? $attr['name'] ?? 'Atribut';
+                                            ?>
+                                            <div class="space-y-3">
+                                                <label class="text-xs font-bold tracking-widest text-secondary uppercase block">
+                                                    <?php echo htmlspecialchars($display_name); ?>
+                                                    <?php echo $is_req ? '<span class="text-primary">*</span>' : ''; ?>
+                                                </label>
+                                                <?php if (!empty($attr['attribute_value_list'])): ?>
+                                                    <div class="relative">
+                                                        <select name="attributes[<?php echo $attr['attribute_id']; ?>]" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20 appearance-none" <?php echo $is_req ? 'required' : ''; ?>>
+                                                            <option value="">-- Pilih --</option>
+                                                            <?php foreach ($attr['attribute_value_list'] as $val): ?>
+                                                                <?php $vName = $val['display_value_name'] ?? $val['name'] ?? 'Opsi'; ?>
+                                                                <option value="<?php echo $val['value_id'] . '|' . htmlspecialchars($vName); ?>" <?php echo ($form_data['attributes'][$attr['attribute_id']] ?? '') == ($val['value_id'] . '|' . $vName) ? 'selected' : ''; ?>>
+                                                                    <?php echo htmlspecialchars($vName); ?>
+                                                                </option>
+                                                            <?php endforeach; ?>
+                                                        </select>
+                                                        <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">expand_more</span>
+                                                    </div>
+                                                <?php else: ?>
+                                                    <input type="text" name="attributes[<?php echo $attr['attribute_id']; ?>]" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20" <?php echo $is_req ? 'required' : ''; ?> value="<?php echo htmlspecialchars($form_data['attributes'][$attr['attribute_id']] ?? ''); ?>" placeholder="Masukkan <?php echo htmlspecialchars($display_name); ?>">
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                                <?php endif; ?>
+
+                                <!-- Action Buttons -->
+                                <div class="mt-8 flex justify-end">
+                                    <button type="submit" name="create_product" class="px-10 py-3 bg-gradient-to-br from-primary to-primary-container text-white font-bold uppercase tracking-widest text-xs rounded-lg shadow-xl shadow-primary/20 active:scale-95 transition-all">
+                                        Publish Product
+                                    </button>
+                                </div>
+                            </form>
+                            <?php endif; ?>
+
+                        </div>
                     </div>
                 </div>
             <?php endif; ?>
@@ -835,15 +818,16 @@ if (!empty($attributes)) {
     </main>
 
     <script>
-        // Auto-select logistic when clicking row
         document.addEventListener('DOMContentLoaded', function() {
-            const logisticRows = document.querySelectorAll('.logistic-table tbody tr');
+            // Check if there are logistic rows to bind click to
+            const logisticRows = document.querySelectorAll('tr[onclick]');
             logisticRows.forEach(row => {
                 row.addEventListener('click', function() {
                     const radio = this.querySelector('input[type="radio"]');
-                    radio.checked = true;
-                    const logisticId = radio.value;
-                    document.getElementById('hidden_logistic_id').value = logisticId;
+                    if(radio) {
+                        radio.checked = true;
+                        document.getElementById('hidden_logistic_id').value = radio.value;
+                    }
                 });
             });
         });
