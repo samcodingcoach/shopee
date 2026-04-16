@@ -574,10 +574,6 @@ if (!empty($attributes)) {
 
                                 <div class="space-y-6">
                                     <div class="space-y-3">
-                                        <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Image ID</label>
-                                        <input type="text" value="<?php echo htmlspecialchars($image_id); ?>" class="w-full h-12 bg-surface-container-high border-0 rounded-lg px-4 font-body text-secondary" readonly>
-                                    </div>
-                                    <div class="space-y-3">
                                         <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Pilih Kategori <span class="text-primary">*</span></label>
                                         <div class="relative">
                                             <select name="category_id" class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20 appearance-none bg-none" required>
@@ -588,7 +584,7 @@ if (!empty($attributes)) {
                                                     </option>
                                                 <?php endforeach; ?>
                                             </select>
-                                            <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">category</span>
+                                            <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">expand_more</span>
                                         </div>
                                     </div>
                                     <div class="flex justify-end pt-6">
@@ -607,17 +603,6 @@ if (!empty($attributes)) {
                                 <input type="hidden" name="id_app" value="<?php echo htmlspecialchars($_POST['id_app'] ?? ''); ?>">
 
                                 <div class="space-y-6">
-                                    <div class="grid grid-cols-2 gap-6">
-                                        <div class="space-y-3">
-                                            <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Image ID</label>
-                                            <input type="text" value="<?php echo htmlspecialchars($image_id); ?>" class="w-full h-12 bg-surface-container-high border-0 rounded-lg px-4 font-body text-secondary" readonly>
-                                        </div>
-                                        <div class="space-y-3">
-                                            <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Category ID</label>
-                                            <input type="text" value="<?php echo htmlspecialchars($category_id); ?>" class="w-full h-12 bg-surface-container-high border-0 rounded-lg px-4 font-body text-secondary" readonly>
-                                        </div>
-                                    </div>
-
                                     <?php if (!empty($logistics)): ?>
                                     <div class="space-y-3">
                                         <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Pilih Pengiriman</label>
