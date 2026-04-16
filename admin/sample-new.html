@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Product Management | Editorial Enterprise</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#c2e8ff",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#76d1ff",
+                        "on-error": "#ffffff",
+                        "secondary": "#5b5e66",
+                        "outline": "#8f7069",
+                        "outline-variant": "#e3beb6",
+                        "on-secondary-fixed-variant": "#43474e",
+                        "surface": "#f9f9f9",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#007ea7",
+                        "on-secondary-container": "#61646c",
+                        "inverse-primary": "#ffb4a4",
+                        "on-surface": "#1a1c1c",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#8d1600",
+                        "primary-fixed": "#ffdad3",
+                        "secondary-container": "#dfe2eb",
+                        "inverse-surface": "#2f3131",
+                        "surface-variant": "#e2e2e2",
+                        "on-tertiary-fixed": "#001e2c",
+                        "on-primary-fixed": "#3e0500",
+                        "on-background": "#1a1c1c",
+                        "background": "#f9f9f9",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#fffbff",
+                        "tertiary": "#006385",
+                        "surface-container-high": "#e8e8e8",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-surface-variant": "#5b403b",
+                        "primary-fixed-dim": "#ffb4a4",
+                        "surface-container": "#eeeeee",
+                        "secondary-fixed": "#dfe2eb",
+                        "on-tertiary-fixed-variant": "#004d67",
+                        "error-container": "#ffdad6",
+                        "surface-tint": "#b62506",
+                        "on-secondary-fixed": "#181c22",
+                        "inverse-on-surface": "#f1f1f1",
+                        "secondary-fixed-dim": "#c3c6cf",
+                        "surface-dim": "#dadada",
+                        "primary": "#b22204",
+                        "surface-container-low": "#f3f3f3",
+                        "surface-bright": "#f9f9f9",
+                        "primary-container": "#d63c1e",
+                        "on-tertiary-container": "#fbfcff",
+                        "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .step-active {
+            color: #EE4D2D;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+
+<body class="bg-surface font-body text-on-surface">
+
+    <!-- Main Stage -->
+    <main class="ml-64 pt-24 px-8 pb-12 min-h-screen bg-surface">
+        <div class="max-w-5xl mx-auto">
+            <!-- Header Section -->
+            <header class="mb-10">
+                <h1 class="font-headline text-4xl font-extrabold text-on-surface tracking-tight mb-2">Create New Product
+                </h1>
+                <p class="text-secondary font-medium uppercase tracking-[0.1em] text-xs">Product Management •
+                    Step-by-Step Curation</p>
+            </header>
+            <!-- Stepper Indicator -->
+            <div class="grid grid-cols-4 gap-4 mb-12">
+                <div class="relative group cursor-pointer">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span
+                            class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold ring-4 ring-primary-fixed">01</span>
+                        <span class="text-sm font-semibold text-primary">Upload Image</span>
+                    </div>
+                    <div class="h-1.5 w-full bg-primary rounded-full"></div>
+                </div>
+                <div class="relative group">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span
+                            class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant text-xs font-bold">02</span>
+                        <span class="text-sm font-semibold text-secondary">Select Category</span>
+                    </div>
+                    <div class="h-1.5 w-full bg-surface-container-high rounded-full overflow-hidden">
+                        <div class="h-full bg-primary w-0 group-hover:w-full transition-all duration-500"></div>
+                    </div>
+                </div>
+                <div class="relative group">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span
+                            class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant text-xs font-bold">03</span>
+                        <span class="text-sm font-semibold text-secondary">Select Pengiriman</span>
+                    </div>
+                    <div class="h-1.5 w-full bg-surface-container-high rounded-full"></div>
+                </div>
+                <div class="relative group">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span
+                            class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant text-xs font-bold">04</span>
+                        <span class="text-sm font-semibold text-secondary">Detail Product</span>
+                    </div>
+                    <div class="h-1.5 w-full bg-surface-container-high rounded-full"></div>
+                </div>
+            </div>
+            <!-- Bento Form Content -->
+            <div class="grid grid-cols-12">
+                <!-- Main Form Canvas -->
+                <div class="col-span-12 lg:col-span-12 space-y-6">
+                    <div
+                        class="bg-surface-container-lowest p-8 rounded-xl shadow-[0_12px_32px_-4px_rgba(26,28,28,0.06)] border border-outline-variant/10">
+                        <!-- Step 1: Upload Image -->
+                        <div class="space-y-8">
+                            <div class="space-y-3">
+                                <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Pilih
+                                    App</label>
+                                <div class="relative">
+                                    <select
+                                        class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20 appearance-none">
+                                        <option>Editorial Shop v.1.0</option>
+                                        <option>Enterprise Marketplace</option>
+                                        <option>Wholesale Global</option>
+                                    </select>
+                                    <span
+                                        class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">expand_more</span>
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Upload
+                                    Image</label>
+                                <div
+                                    class="border-2 border-dashed border-outline-variant/30 rounded-xl p-12 flex flex-col items-center justify-center bg-surface-container-lowest hover:bg-primary-fixed/10 transition-colors duration-300 group">
+                                    <div
+                                        class="w-16 h-16 rounded-full bg-surface-container-low flex items-center justify-center mb-4 group-hover:bg-primary/10 transition-colors">
+                                        <span
+                                            class="material-symbols-outlined text-primary text-3xl">cloud_upload</span>
+                                    </div>
+                                    <h4 class="text-on-surface font-semibold mb-1">Drag and drop image here</h4>
+                                    <p class="text-secondary text-sm mb-6">Support PNG, JPG, WebP (Max 5MB)</p>
+                                    <button
+                                        class="px-6 py-2.5 bg-primary text-white font-semibold rounded-lg shadow-lg shadow-primary/20 hover:primary-container active:scale-95 transition-all text-sm">
+                                        Browse Image
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Step 2: Select Category (Hidden in UI logic for layout preview) -->
+                        <div class="mt-12 pt-12 border-t border-surface-container-high space-y-6">
+                            <div class="space-y-3">
+                                <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Pilih
+                                    Kategori</label>
+                                <div class="relative">
+                                    <select
+                                        class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20 appearance-none">
+                                        <option>Fashion &amp; Apparel</option>
+                                        <option>Electronics &amp; Gadgets</option>
+                                        <option>Home Living</option>
+                                        <option>Art &amp; Collectibles</option>
+                                    </select>
+                                    <span
+                                        class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">category</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Step 3: Select Pengiriman -->
+                        <div class="mt-12 pt-12 border-t border-surface-container-high space-y-6">
+                            <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Pilih
+                                Pengiriman</label>
+                            <div class="overflow-hidden rounded-xl border border-surface-container-high">
+                                <table class="w-full text-left border-collapse">
+                                    <thead class="bg-surface-container-low">
+                                        <tr>
+                                            <th
+                                                class="px-6 py-4 text-xs font-bold text-secondary uppercase tracking-wider">
+                                                Pilih</th>
+                                            <th
+                                                class="px-6 py-4 text-xs font-bold text-secondary uppercase tracking-wider">
+                                                Logistic ID</th>
+                                            <th
+                                                class="px-6 py-4 text-xs font-bold text-secondary uppercase tracking-wider">
+                                                Nama Kurir</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-surface-container-low">
+                                        <tr class="hover:bg-surface-container-lowest transition-colors">
+                                            <td class="px-6 py-4">
+                                                <input
+                                                    class="w-4 h-4 text-primary focus:ring-primary border-outline-variant"
+                                                    name="courier" type="radio" />
+                                            </td>
+                                            <td class="px-6 py-4 font-mono text-sm">#101</td>
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-center gap-3">
+                                                    <div
+                                                        class="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center text-xs font-bold">
+                                                        JNE</div>
+                                                    <span class="font-medium">JNE Express</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-surface-container-lowest transition-colors">
+                                            <td class="px-6 py-4">
+                                                <input
+                                                    class="w-4 h-4 text-primary focus:ring-primary border-outline-variant"
+                                                    name="courier" type="radio" />
+                                            </td>
+                                            <td class="px-6 py-4 font-mono text-sm">#102</td>
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-center gap-3">
+                                                    <div
+                                                        class="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center text-xs font-bold">
+                                                        J&amp;T</div>
+                                                    <span class="font-medium">J&amp;T Express</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-surface-container-lowest transition-colors">
+                                            <td class="px-6 py-4">
+                                                <input
+                                                    class="w-4 h-4 text-primary focus:ring-primary border-outline-variant"
+                                                    name="courier" type="radio" />
+                                            </td>
+                                            <td class="px-6 py-4 font-mono text-sm">#103</td>
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-center gap-3">
+                                                    <div
+                                                        class="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center text-xs font-bold text-primary">
+                                                        SC</div>
+                                                    <span class="font-medium">SiCepat</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- Step 4: Detail Product -->
+                        <div class="mt-12 pt-12 border-t border-surface-container-high grid grid-cols-2 gap-6">
+                            <div class="col-span-2 space-y-3">
+                                <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Product
+                                    Name</label>
+                                <input
+                                    class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20"
+                                    placeholder="e.g. Minimalist Oak Table" type="text" />
+                            </div>
+                            <div class="space-y-3">
+                                <label
+                                    class="text-xs font-bold tracking-widest text-secondary uppercase block">Stock</label>
+                                <input
+                                    class="w-full h-12 bg-surface-container-low border-0 rounded-lg px-4 font-body focus:ring-2 focus:ring-primary/20"
+                                    type="number" value="1" />
+                            </div>
+                            <div class="space-y-3">
+                                <label class="text-xs font-bold tracking-widest text-secondary uppercase block">Price
+                                    (IDR)</label>
+                                <div class="relative">
+                                    <span
+                                        class="absolute left-4 top-1/2 -translate-y-1/2 text-secondary font-bold text-sm">Rp</span>
+                                    <input
+                                        class="w-full h-12 bg-surface-container-low border-0 rounded-lg pl-12 pr-4 font-body focus:ring-2 focus:ring-primary/20"
+                                        placeholder="0.00" type="text" />
+                                </div>
+                            </div>
+                            <div class="col-span-2 space-y-3">
+                                <label
+                                    class="text-xs font-bold tracking-widest text-secondary uppercase block">Description</label>
+                                <textarea
+                                    class="w-full bg-surface-container-low border-0 rounded-lg p-4 font-body focus:ring-2 focus:ring-primary/20 resize-none"
+                                    placeholder="Enter product description here..." rows="4"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Action Buttons -->
+                    <div class="flex justify-between items-center px-4">
+                        <button
+                            class="px-8 py-3 text-secondary font-bold uppercase tracking-widest text-xs hover:text-on-surface transition-colors">Save
+                            as Draft</button>
+                        <div class="flex gap-4">
+                            <button
+                                class="px-8 py-3 border border-outline-variant/30 text-on-surface font-bold uppercase tracking-widest text-xs rounded-lg hover:bg-surface-container-low transition-all">Back</button>
+                            <button
+                                class="px-10 py-3 bg-gradient-to-br from-primary to-primary-container text-white font-bold uppercase tracking-widest text-xs rounded-lg shadow-xl shadow-primary/20 active:scale-95 transition-all">Publish
+                                Product</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>
