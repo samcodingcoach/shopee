@@ -131,10 +131,16 @@
                     </nav>
                     <h1 class="font-manrope text-4xl font-extrabold tracking-tight text-on-background">Application</h1>
                 </div>
-                <button onclick="openAddModal()" class="flex items-center gap-2 bg-gradient-to-br from-[#b22204] to-[#d63c1e] text-white px-6 py-2.5 rounded-md font-semibold text-sm shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
-                    <span class="material-symbols-outlined text-sm">add</span>
-                    Create Application
-                </button>
+                <div class="flex items-center gap-3">
+                    <a href="../shopee_auth.php" class="flex items-center gap-2 bg-gradient-to-br from-emerald-600 to-emerald-500 text-white px-6 py-2.5 rounded-md font-semibold text-sm shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition-all">
+                        <span class="material-symbols-outlined text-sm">vpn_key</span>
+                        Authorize
+                    </a>
+                    <button onclick="openAddModal()" class="flex items-center gap-2 bg-gradient-to-br from-[#b22204] to-[#d63c1e] text-white px-6 py-2.5 rounded-md font-semibold text-sm shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
+                        <span class="material-symbols-outlined text-sm">add</span>
+                        Create Application
+                    </button>
+                </div>
             </div>
 
             <!-- Table Section with "No-Line" Philosophy -->
